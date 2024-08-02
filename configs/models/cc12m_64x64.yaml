@@ -1,0 +1,98 @@
+name: cc12m_64x64
+dataset_config: configs/datasets/cc12m.yaml
+
+#evaluator_arguments:
+batch_size: 32
+num_eval_batches: 500
+sample_image_size: 64
+test_file_list: validation.tsv
+reader_config_file: launch_scripts/reader/latest_eval.yaml
+
+# sampler_arguments:
+min_examples: 10000
+sample_dir: /mnt/data/samples
+batch_size: 32
+sample_image_size: 64
+test_file_list: validation.tsv
+device: cuda
+model: unet
+
+output_dir: /mnt/data/outputs
+num_diffusion_steps: 1000
+reproject_signal: false
+predict_variances: false
+model_output_scale: 0
+prediction_type: V_PREDICTION
+loss_target_type: HA_STYLE
+schedule_type: DEEPFLOYD
+prediction_length: 129
+use_vdm_loss_weights: false
+loss_factor: 1
+num_training_steps: 5000
+num_epochs: 20000
+avg_lm_steps: 0
+use_lm_mask: 1
+categorical_conditioning: 0
+vocab_file: data/t5.vocab
+text_model: google/flan-t5-xl
+vision_model: unet
+
+unet_config:
+  num_resnets_per_resolution: [2, 2, 2]
+  attention_levels: [1, 2]
+  num_attention_layers: [0, 1, 5]
+  conditioning_feature_dim: -1
+  conditioning_feature_proj_dim: 2048
+  num_lm_head_layers: 0
+  masked_cross_attention: 0
+  resolution_channels: [256, 512, 768]
+  skip_mid_blocks: False
+  skip_cond_emb: False
+  nesting: False
+  micro_conditioning: 'scale:64'
+  temporal_mode: False
+  temporal_spatial_ds: False
+  temporal_positional_encoding: False
+  resnet_config:
+    num_channels: -1
+    output_channels: -1
+    num_groups_norm: 32
+    dropout: 0.0
+    use_attention_ffn: True
+diffusion_config:
+  sampler_config:
+    num_diffusion_steps: 1000
+    reproject_signal: False
+    schedule_type: DEEPFLOYD
+    prediction_type: V_PREDICTION
+    loss_target_type: DDPM
+    beta_start: 0.0001
+    beta_end: 0.02
+    threshold_function: CLIP
+    rescale_schedule: 1.0
+    schedule_shifted: False
+  model_output_scale: 0.0
+  use_vdm_loss_weights: False
+
+reader_config:
+  reader_buffer_size: 500
+  shuffle_buffer_size: 500
+  image_size: 64
+  smaller_side_size: 64
+  random_crop: false
+  max_caption_length: 512
+  max_token_length: 128
+  num_readers: 16
+
+metrics: fid,clip
+batch_size: 32
+gradient_clip_norm: 2
+num_gradient_accumulations: 1
+warmup_steps: 10000
+use_adamw: true
+log_freq: 50
+save_freq: 5000
+lr: 5.0e-05
+fp16: 0
+use_precomputed_text_embeddings: 0
+seed: -1

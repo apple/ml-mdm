@@ -1,0 +1,116 @@
+name: cc12m_256x256
+dataset_config: configs/datasets/cc12m.yaml
+# sampler_arguments
+min_examples: 10000
+sample-dir: /mnt/data/samples
+# batch-size: 32
+sample_image-size: 256
+test_file_list: validation.tsv
+#reader-config-file: configs/datasets/reader_config_eval.yaml
+# shared_arguments
+output_dir: /mnt/data/outputs
+num_diffusion_steps: 1000
+reproject_signal: false
+model_output_scale: 0
+prediction_type: V_PREDICTION
+loss_target_type: DDPM
+schedule_type: DEEPFLOYD
+prediction_length: 129
+use_vdm_loss_weights: false
+use_double_loss: true
+no_use_residual: true
+num_training_steps: 1000000
+avg_lm_steps: 0
+categorical_conditioning: 0
+rescale_signal: 1
+schedule_shifted: true
+skip_normalization: true
+random_low_noise: true
+vocab_file: data/t5.vocab
+text_model: google/flan-t5-xl
+model: nested_unet
+vision_model: nested_unet
+#model_config-file: configs/models/model_config_nested256.yaml
+unet_config:
+  attention_levels: []
+  conditioning_feature_dim: -1
+  conditioning_feature_proj_dim: -1
+  freeze_inner_unet: false
+  initialize_inner_with_pretrained: None
+  inner_config:
+    attention_levels: [1, 2]
+    conditioning_feature_dim: -1
+    conditioning_feature_proj_dim: 2048
+    masked_cross_attention: 0
+    micro_conditioning: scale:64
+    nesting: true
+    num_attention_layers: [0, 1, 5]
+    num_lm_head_layers: 0
+    num_resnets_per_resolution: [2, 2, 2]
+    num_temporal_attention_layers: null
+    resnet_config: {dropout: 0.0, num_channels: -1, num_groups_norm: 32, output_channels: -1,
+      use_attention_ffn: true}
+    resolution_channels: [256, 512, 768]
+    skip_cond_emb: false
+    skip_mid_blocks: false
+    temporal_dim: null
+    temporal_mode: false
+    temporal_positional_encoding: false
+    temporal_spatial_ds: false
+  interp_conditioning: false
+  masked_cross_attention: 1
+  micro_conditioning: scale:256
+  nesting: false
+  num_attention_layers: [0, 0, 0]
+  num_lm_head_layers: 0
+  num_resnets_per_resolution: [2, 2, 1]
+  num_temporal_attention_layers: null
+  resnet_config: {dropout: 0.0, num_channels: -1, num_groups_norm: 32, output_channels: -1,
+    use_attention_ffn: false}
+  resolution_channels: [64, 128, 256]
+  skip_cond_emb: true
+  skip_inner_unet_input: false
+  skip_mid_blocks: true
+  skip_normalization: true
+  temporal_dim: 1024
+  temporal_mode: false
+  temporal_positional_encoding: false
+  temporal_spatial_ds: false
+
+reader_config:
+  image_size: 256
+  smaller_side_size: 256
+  random_crop: false
+  max_caption_length: -1
+  max_token_length: 128
+  reader_buffer_size: 2000
+  shuffle_buffer_size: 2000
+
+  append_eos: true
+  num_readers: 2
+  pad_to_max_length: false
+  padding_token: <pad>
+  prepad_bos: false
+  prepad_caption_with_space: true
+  random_crop: false
+  #reader_buffer_size: 64
+  #shuffle_buffer_size: 9600
+  use_tokenizer_scores: true
+
+use_lm_mask: 1
+#  torchmetrics_arguments:
+metrics: fid,clip
+#  trainer_arguments:
+use_precomputed_text_embeddings: 0
+pretrained_vision_file: vis_model_256x256.pth
+#batch_size: 24
+mixed_ratio: '2:1'
+gradient_clip_norm: 2
+loss_factor: 1
+num_gradient_accumulations: 1
+warmup_steps: 10000
+# reader-config-file: configs/datasets/reader_config.yaml
+log_freq: 50
+save_freq: 5000
+lr: 5.0e-05
+fp16: 0

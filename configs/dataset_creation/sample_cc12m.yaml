@@ -1,0 +1,4 @@
+cc12m_index: cc12m_index.tsv # replace with your own
+cc12m_local_dir: cc12m_download/
+validation_percentage: 0.2
+split_seed: 4

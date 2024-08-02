@@ -1,0 +1,6 @@
+train:
+  files:
+    - s3://mlx/datasets/cc12m-64x64/images_00.*.tsv
+eval:
+  files:
+    - s3://mlx/datasets/cc12m-64x64/validation.tsv

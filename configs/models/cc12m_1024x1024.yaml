@@ -1,0 +1,132 @@
+name: Text2Image_Diffusion_R1024R256R64RND_T5XL_Detailed_PTV2W
+dataset_config: configs/datasets/cc12m.yaml
+# sampler_arguments:
+min_examples: 10000
+sample_dir: /mnt/data/samples
+# batch-size: 8
+sample_image_size: 1024
+test_file_list: validation.tsv
+# reader-config-file: configs/datasets/reader_config_eval.yaml
+#  shared_arguments:
+output_dir: /mnt/data/outputs
+num_diffusion_steps: 1000
+reproject_signal: false
+model_output_scale: 0
+prediction_type: V_PREDICTION
+loss_target_type: DDPM
+schedule_type: DEEPFLOYD
+prediction_length: 129
+use_vdm_loss_weights: false
+use_double_loss: true
+no_use_residual: true
+num_training_steps: 1000000
+avg_lm_steps: 0
+categorical_conditioning: 0
+rescale_signal: 1
+schedule_shifted: true
+schedule_shifted_power: 2
+skip_normalization: true
+random_low_noise: true
+vocab_file: data/t5.vocab
+text_model: google/flan-t5-xl
+model: nested2_unet
+vision_model: nested2_unet
+
+unet_config:
+  attention_levels: []
+  conditioning_feature_dim: -1
+  conditioning_feature_proj_dim: 2048
+  freeze_inner_unet: false
+  initialize_inner_with_pretrained: 8rwvbg85tt
+  inner_config:
+    attention_levels: []
+    conditioning_feature_dim: -1
+    conditioning_feature_proj_dim: 2048
+    freeze_inner_unet: false
+    initialize_inner_with_pretrained: null
+    inner_config:
+      attention_levels: [1, 2]
+      conditioning_feature_dim: -1
+      conditioning_feature_proj_dim: 2048
+      masked_cross_attention: 0
+      micro_conditioning: scale:64
+      nesting: true
+      num_attention_layers: [0, 1, 5]
+      num_lm_head_layers: 0
+      num_resnets_per_resolution: [2, 2, 2]
+      num_temporal_attention_layers: null
+      resnet_config: {dropout: 0.0, num_channels: -1, num_groups_norm: 32, output_channels: -1,
+        use_attention_ffn: true}
+      resolution_channels: [256, 512, 768]
+      skip_cond_emb: false
+      skip_mid_blocks: false
+      temporal_dim: null
+      temporal_mode: false
+      temporal_positional_encoding: false
+      temporal_spatial_ds: false
+    interp_conditioning: false
+    masked_cross_attention: 1
+    micro_conditioning: scale:256
+    nesting: true
+    num_attention_layers: [0, 0, 0]
+    num_lm_head_layers: 0
+    num_resnets_per_resolution: [2, 2, 1]
+    num_temporal_attention_layers: null
+    resnet_config: {dropout: 0.0, num_channels: -1, num_groups_norm: 32, output_channels: -1,
+      use_attention_ffn: false}
+    resolution_channels: [64, 128, 256]
+    skip_cond_emb: true
+    skip_inner_unet_input: false
+    skip_mid_blocks: true
+    skip_normalization: false
+    temporal_dim: 1024
+    temporal_mode: false
+    temporal_positional_encoding: false
+    temporal_spatial_ds: false
+  interp_conditioning: false
+  masked_cross_attention: 1
+  micro_conditioning: scale:1024
+  nesting: false
+  num_attention_layers: [0, 0, 0]
+  num_lm_head_layers: 0
+  num_resnets_per_resolution: [2, 2, 1]
+  num_temporal_attention_layers: null
+  resnet_config: {dropout: 0.0, num_channels: -1, num_groups_norm: 32, output_channels: -1,
+    use_attention_ffn: false}
+  resolution_channels: [32, 32, 64]
+  skip_cond_emb: true
+  skip_inner_unet_input: false
+  skip_mid_blocks: true
+  skip_normalization: true
+  temporal_dim: 1024
+  temporal_mode: false
+  temporal_positional_encoding: false
+  temporal_spatial_ds: false
+
+# import defaults
+# reader-config-file: configs/datasets/reader_config.yaml
+# add overrides
+reader_config:
+  image_size: 1024
+  smaller_side_size: 1024
+  random_crop: false
+  max_caption_length: -1
+  max_caption_length: 512 # note
+  max_token_length: 128
+  reader_buffer_size: 64
+  shuffle_buffer_size: 9600
+use_lm_mask: 1
+#  torchmetrics_arguments:
+metrics: fid,clip
+#  trainer_arguments:
+use_precomputed_text_embeddings: 0
+batch_size: 4
+multi_res_weights: '16:4:1'
+gradient_clip_norm: 2
+loss_factor: 1
+num_gradient_accumulations: 1
+warmup_steps: 10000
+log_freq: 50
+save_freq: 5000
+lr: 5.0e-05
+fp16: 1
