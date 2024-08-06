@@ -1,6 +1,6 @@
 # ml_mdm - Matryoshka Diffusion Models
 
-`ml_mdm` is a python package for efficiently training high quality text-to-image diffusion models.
+`ml_mdm` is a python package for efficiently training high quality text-to-image diffusion models — brought to the public by [Luke Carlson](https://github.com/jlukecarlson), [Jiatao Gu](https://github.com/MultiPath), [Shuangfei Zhai](https://github.com/Shuangfei), and [Navdeep Jaitly](https://github.com/ndjaitly).
 
 
 ---
@@ -32,7 +32,6 @@ This software project accompanies the research paper, [*Matryoshka Diffusion Mod
 | [Installation](#installation) | Start training models and generating samples with `ml_mdm` |
 | [Pretrained Models](#pretrained-models) | Links to download our pretrained models (64, 356, 1024) |
 | [Web Demo](#web-demo) | Generate images with our web UI |
-| [Installation](#installation) | Start training models and generating samples with `ml_mdm` |
 | [Codebase Structure](#codebase) | An overview of the python module |
 | [Concepts](#concepts) | Core concepts and design principles. |
 | [Tutorial](#tutorials) | Step-by-step training of an MDM model on CC12m |
@@ -76,6 +75,8 @@ We've uploaded model checkpoints to:
 - https://docs-assets.developer.apple.com/ml-research/models/mdm/flickr256/vis_model.pth
 - https://docs-assets.developer.apple.com/ml-research/models/mdm/flickr1024/vis_model.pth
 
+> Note: We are releasing models that were trained on 50M text-image pairs collected from Flickr. In this repo, we provide scripts for downloading [CC12M](https://github.com/google-research-datasets/conceptual-12m) and configs for training equivalent models on CC12M data.
+
 Feel free to download the models or skip further down to train your own. Once a pretrained model is downloaded locally, you can use it in our web demo, pass it as an argument to training, sampling, and more.
 
 ```bash
@@ -86,9 +87,10 @@ curl https://docs-assets.developer.apple.com/ml-research/models/mdm/flickr1024/v
 
 
 ### Launch Web Demo
-```
+```bash
 torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 19999
 ```
+![image](docs/web_demo.png)
 
 ## Codebase
 
@@ -99,6 +101,7 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 | `ml_mdm.config` | Connects configuration dataclasses with associated models, pipelines, and clis using [simple parsing](https://github.com/lebrice/SimpleParsing/blob/master/README.md) |
 | `ml_mdm.clis` | All command line tools in the project, the most relevant being `train_parallel.py` |
 | `tests/` | Unit tests and sample training files |
+
 
 
 # Concepts
@@ -296,7 +299,7 @@ eval:
 
 ### Dataset Structure
 The S3 Bucket contains a series of files in this format, take a look at `ml_mdm/clis/scrape_cc12m.py` to generate your own.
-```
+```bash
 2023-04-01 01:31:30   36147200 images_00000.tar
 2023-05-10 11:34:49    1108424 images_00000.tsv
 2023-04-01 01:31:26   36454400 images_00001.tar
@@ -306,3 +309,18 @@ The S3 Bucket contains a series of files in this format, take a look at `ml_mdm/
 ```
 
 Minimal representations of these files can be found at `tests/test_files/`.
+
+
+## Citation
+If you find our work useful, please consider citing us as:
+```
+@misc{gu2023matryoshkadiffusionmodels,
+      title={Matryoshka Diffusion Models},
+      author={Jiatao Gu and Shuangfei Zhai and Yizhe Zhang and Josh Susskind and Navdeep Jaitly},
+      year={2023},
+      eprint={2310.15111},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2310.15111},
+}
+```
