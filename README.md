@@ -80,16 +80,21 @@ We've uploaded model checkpoints to:
 Feel free to download the models or skip further down to train your own. Once a pretrained model is downloaded locally, you can use it in our web demo, pass it as an argument to training, sampling, and more.
 
 ```bash
-curl https://docs-assets.developer.apple.com/ml-research/models/mdm/flickr64/vis_model.pth --output vis_model_64x64.pth
-curl https://docs-assets.developer.apple.com/ml-research/models/mdm/flickr256/vis_model.pth --output vis_model_256x256.pth
-curl https://docs-assets.developer.apple.com/ml-research/models/mdm/flickr1024/vis_model.pth --output vis_model_1024x1024.pth
+export ASSET_PATH=https://docs-assets.developer.apple.com/ml-research/models/mdm
+
+curl $ASSET_PATH/flickr64/vis_model.pth --output vis_model_64x64.pth
+curl $ASSET_PATH/flickr256/vis_model.pth --output vis_model_256x256.pth
+curl $ASSET_PATH/flickr1024/vis_model.pth --output vis_model_1024x1024.pth
 ```
 
 
-### Launch Web Demo
+### Web Demo
+You can run your own instance of the web demo (after downloading the checkpoints) with this command:
+
 ```bash
-torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 19999
+torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port $YOUR_PORT
 ```
+
 ![image](docs/web_demo.png)
 
 ## Codebase
