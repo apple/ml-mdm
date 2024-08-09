@@ -31,7 +31,7 @@ This software project accompanies the research paper, [*Matryoshka Diffusion Mod
 | [Introduction](#introduction) | A brief overview of Matryoshka Diffusion Models |
 | [Installation](#installation) | Start training models and generating samples with `ml_mdm` |
 | [Pretrained Models](#pretrained-models) | Links to download our pretrained models (64, 356, 1024) |
-| [Web Demo](#web-demo) | Generate images with our web UI |
+| [Web Demo](#launch-web-demo) | Generate images with our web UI |
 | [Codebase Structure](#codebase) | An overview of the python module |
 | [Concepts](#concepts) | Core concepts and design principles. |
 | [Tutorial](#tutorials) | Step-by-step training of an MDM model on CC12m |
