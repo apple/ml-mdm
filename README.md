@@ -56,7 +56,7 @@ The default installation dependencies, as defined in the `pyproject.toml`, are s
 > Users have run this codebase with Python 3.9,3.10 and cuda_12, cuda-11.8
 
 ```
-> pip install .
+> pip install -e .
 ```
 
 Developers should set up `pre-commit` as well with `pre-commit install`.
