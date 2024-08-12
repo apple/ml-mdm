@@ -4,7 +4,7 @@ dataset_config: configs/datasets/cc12m.yaml
 min_examples: 10000
 sample-dir: /mnt/data/samples
 # batch-size: 32
-sample_image-size: 256
+sample_image_size: 256
 test_file_list: validation.tsv
 #reader-config-file: configs/datasets/reader_config_eval.yaml
 # shared_arguments
