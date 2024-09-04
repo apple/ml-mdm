@@ -2,7 +2,15 @@
 # Copyright (C) 2024 Apple Inc. All rights reserved.
 import sys
 
-from ml_mdm import config, diffusion, language_models, models, reader, samplers
+from ml_mdm import (
+    config,
+    diffusion,
+    distributed,
+    language_models,
+    models,
+    reader,
+    samplers,
+)
 
 
 def mimic_old_modules():
@@ -12,3 +20,4 @@ def mimic_old_modules():
     sys.modules["models"] = models
     sys.modules["diffusion"] = diffusion
     sys.modules["samplers"] = samplers
+    sys.modules["distributed"] = distributed
