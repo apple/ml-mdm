@@ -20,7 +20,13 @@ from ml_mdm import helpers, reader
 from ml_mdm.config import get_arguments, get_model, get_pipeline
 from ml_mdm.language_models import factory
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
 
 # Note that it is called add_arguments, not add_argument.
 logging.basicConfig(
