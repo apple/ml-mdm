@@ -270,7 +270,7 @@ class NestedModel(Model):
                 min=-1, max=1
             )  # by force, clip the x0 values.
             pred_x0_low = (
-                F.interpolate(pred_x0_low, scale_factor=ratio, mode="bicubic") / ratio
+                F.interpolate(pred_x0_low, scale_factor=4, mode="bicubic") / 4
             )
             pred = pred + self.sampler.get_pred_from_x0_xt(x_t, pred_x0_low, times)
             p_t = [pred, pred_low]
