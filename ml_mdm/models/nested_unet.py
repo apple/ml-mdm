@@ -76,6 +76,9 @@ class Nested4UNetConfig(Nested3UNetConfig):
 
 
 def download(vision_model_path):
+    from ml_mdm.utils import fix_old_checkpoints
+    fix_old_checkpoints.mimic_old_modules()
+
     import os
 
     from distributed import get_local_rank
