@@ -138,7 +138,7 @@ def generate(
         prompt = input_template.format(prompt=prompt)
     if len(negative_template) > 0:
         negative_prompt = negative_prompt + negative_template
-    print(f"Postive: {prompt} / Negative: {negative_prompt}")
+    print(f"Positive: {prompt} / Negative: {negative_prompt}")
 
     if not os.path.exists(ckpt_name):
         logging.info(f"Did not generate because {ckpt_name} does not exist")
