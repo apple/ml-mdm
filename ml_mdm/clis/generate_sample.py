@@ -303,7 +303,7 @@ def main(args):
     ) as demo:
         with gr.Row(equal_height=True):
             header = """
-                    # MLR Text-to-Image Diffusion Model Web Demo
+                    # MRL Text-to-Image Diffusion Model Web Demo
 
                     ### Usage
                     - Select examples below or manually input model and prompts
