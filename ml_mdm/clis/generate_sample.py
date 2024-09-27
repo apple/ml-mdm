@@ -138,7 +138,7 @@ def generate(
         prompt = input_template.format(prompt=prompt)
     if len(negative_template) > 0:
         negative_prompt = negative_prompt + negative_template
-    print(f"Postive: {prompt} / Negative: {negative_prompt}")
+    print(f"Positive: {prompt} / Negative: {negative_prompt}")
 
     if not os.path.exists(ckpt_name):
         logging.info(f"Did not generate because {ckpt_name} does not exist")
@@ -478,7 +478,7 @@ def main(args):
 
             with gr.Column(scale=2):
                 with gr.Accordion(
-                    "Addditional outputs", open=False, elem_id="output-accordion"
+                    "Additional outputs", open=False, elem_id="output-accordion"
                 ):
                     with gr.Row(equal_height=True):
                         output_text = gr.Textbox(value=None, label="System output")
