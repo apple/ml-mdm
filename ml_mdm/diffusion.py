@@ -258,22 +258,30 @@ class NestedModel(Model):
                 for p in p_t
             ]
 
-        # recompute the noise from pred_low
+        # recompute the noise from pred_low or pred_middle
         if not self.diffusion_config.no_use_residual:
             # assert (
             #     self.diffusion_config.mixed_batch is None
             # ), "do not support mixed-batch"
-            x_t, x_t_low = x_t
-            pred, pred_low = p_t
-            pred_x0_low, _ = self.sampler.get_x0_eps_from_pred(x_t_low, pred_low, times)
-            pred_x0_low = pred_x0_low.clamp(
+            if len(x_t) == 3:
+                x_t, x_t_middle, x_t_low = x_t
+                pred, pred_middle, pred_low = p_t
+                pred_x0_previous, _ = self.sampler.get_x0_eps_from_pred(x_t_middle, pred_middle, times)
+            elif len(x_t) == 2:
+                x_t, x_t_low = x_t
+                pred, pred_low = p_t
+                pred_x0_previous, _ = self.sampler.get_x0_eps_from_pred(x_t_low, pred_low, times)
+            pred_x0_previous = pred_x0_previous.clamp(
                 min=-1, max=1
             )  # by force, clip the x0 values.
-            pred_x0_low = (
-                F.interpolate(pred_x0_low, scale_factor=4, mode="bicubic") / 4
+            pred_x0_previous = (
+                F.interpolate(pred_x0_previous, scale_factor=4, mode="bicubic") / 4
             )
-            pred = pred + self.sampler.get_pred_from_x0_xt(x_t, pred_x0_low, times)
-            p_t = [pred, pred_low]
+            pred = pred + self.sampler.get_pred_from_x0_xt(x_t, pred_x0_previous, times)
+            if len(p_t) == 3:
+                p_t = [pred, pred_middle, pred_low]
+            elif len(p_t) == 2:
+                p_t = [pred, pred_low]
         return p_t
 
 
