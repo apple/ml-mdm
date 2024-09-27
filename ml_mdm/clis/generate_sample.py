@@ -478,7 +478,7 @@ def main(args):
 
             with gr.Column(scale=2):
                 with gr.Accordion(
-                    "Addditional outputs", open=False, elem_id="output-accordion"
+                    "Additional outputs", open=False, elem_id="output-accordion"
                 ):
                     with gr.Row(equal_height=True):
                         output_text = gr.Textbox(value=None, label="System output")
