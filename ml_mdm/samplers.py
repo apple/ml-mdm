@@ -597,7 +597,7 @@ class NestedSampler(Sampler):
             x_t += [
                 super().get_xt(
                     self.get_image_rescaled(x, s)
-                    if not self._config.schedule_shifted
+                    if self._config.schedule_shifted
                     else x,
                     e,
                     gi,
@@ -611,7 +611,7 @@ class NestedSampler(Sampler):
             tgt += [
                 super().get_prediction_targets(
                     self.get_image_rescaled(x, s)
-                    if not self._config.schedule_shifted
+                    if self._config.schedule_shifted
                     else x,
                     e,
                     gi,
@@ -668,7 +668,7 @@ class NestedSampler(Sampler):
                         need_noise=time_step != 1,
                         ddim_eta=ddim_eta,
                         clip_fn=self.clip_sample,
-                        image_scale=s if not self._config.schedule_shifted else 1,
+                        image_scale=s if self._config.schedule_shifted else 1,
                     )
                     for x, p, g, g_last, s in zip(x_t, p_t, g_t, g_s, scales)
                 ]
@@ -693,7 +693,7 @@ class NestedSampler(Sampler):
     ):
         scales = [
             x_t[i].size(-1) / x_t[-1].size(-1)
-            if not self._config.schedule_shifted
+            if self._config.schedule_shifted
             else 1
             for i in range(len(x_t))
         ]
