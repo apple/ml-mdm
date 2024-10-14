@@ -37,7 +37,7 @@ unet_config:
   conditioning_feature_dim: -1
   conditioning_feature_proj_dim: 2048
   freeze_inner_unet: false
-  initialize_inner_with_pretrained: 8rwvbg85tt
+  initialize_inner_with_pretrained: null
   inner_config:
     attention_levels: []
     conditioning_feature_dim: -1
