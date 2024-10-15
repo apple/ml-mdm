@@ -9,24 +9,26 @@ test_file_list: validation.tsv
 # reader-config-file: configs/datasets/reader_config_eval.yaml
 #  shared_arguments:
 output_dir: /mnt/data/outputs
-num_diffusion_steps: 1000
-reproject_signal: false
-model_output_scale: 0
-prediction_type: V_PREDICTION
-loss_target_type: DDPM
-schedule_type: DEEPFLOYD
+diffusion_config:
+  sampler_config:
+    num_diffusion_steps: 1000
+    reproject_signal: false
+    prediction_type: V_PREDICTION
+    loss_target_type: DDPM
+    schedule_type: DEEPFLOYD
+    rescale_signal: 1
+    schedule_shifted: true
+    schedule_shifted_power: 2
+  model_output_scale: 0
+  use_vdm_loss_weights: false
+  use_double_loss: true
+  no_use_residual: true
 prediction_length: 129
-use_vdm_loss_weights: false
-use_double_loss: true
-no_use_residual: true
 num_training_steps: 1000000
 avg_lm_steps: 0
 categorical_conditioning: 0
-rescale_signal: 1
-schedule_shifted: true
-schedule_shifted_power: 2
-skip_normalization: true
-random_low_noise: true
+# skip_normalization: true
+# random_low_noise: true
 vocab_file: data/t5.vocab
 text_model: google/flan-t5-xl
 model: nested2_unet
