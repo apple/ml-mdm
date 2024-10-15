@@ -110,6 +110,12 @@ class SamplerConfig:
             "help": "automatically shift the noise schedule based on the resolution ratios."
         },
     )
+    schedule_shifted_power: float = field(
+        default=1,
+        metadata={
+            "help": "noise shifted ratio, by default using 1."
+        },
+    )
 
 
 ##########################################################################################
@@ -242,6 +248,8 @@ class Sampler(nn.Module):
 
     def get_schedule_shifted(self, gammas, scale_factor=None):
         if (scale_factor is not None) and (scale_factor > 1):  # rescale noise schecule
+            p = self._config.schedule_shifted_power
+            scale_factor = scale_factor ** p
             snr = gammas / (1 - gammas)
             scaled_snr = snr / scale_factor
             gammas = 1 / (1 + 1 / scaled_snr)
