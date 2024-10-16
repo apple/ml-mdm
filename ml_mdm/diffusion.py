@@ -260,9 +260,9 @@ class NestedModel(Model):
 
         # recompute the noise from pred_low or pred_middle
         if not self.diffusion_config.no_use_residual:
-            # assert (
-            #     self.diffusion_config.mixed_batch is None
-            # ), "do not support mixed-batch"
+            assert (
+                self.diffusion_config.mixed_ratio is None
+            ), "do not support mixed-batch"
             if len(x_t) == 3:
                 x_t, x_t_middle, x_t_low = x_t
                 pred, pred_middle, pred_low = p_t
@@ -272,6 +272,10 @@ class NestedModel(Model):
                 pred, pred_low = p_t
                 pred_x0_previous, _ = self.sampler.get_x0_eps_from_pred(x_t_low, pred_low, times)
             pred_x0_previous = pred_x0_previous.clamp(
+            x_t, x_t_low = x_t
+            pred, pred_low = p_t
+            pred_x0_low, _ = self.sampler.get_x0_eps_from_pred(x_t_low, pred_low, times)
+            pred_x0_low = pred_x0_low.clamp(
                 min=-1, max=1
             )  # by force, clip the x0 values.
             pred_x0_previous = (
