@@ -1,6 +1,6 @@
 # ml_mdm - Matryoshka Diffusion Models
 
-`ml_mdm` is a python package for efficiently training high quality text-to-image diffusion models — brought to the public by [Luke Carlson](https://github.com/jlukecarlson), [Jiatao Gu](https://github.com/MultiPath), [Shuangfei Zhai](https://github.com/Shuangfei), and [Navdeep Jaitly](https://github.com/ndjaitly).
+`ml_mdm` is a python package for efficiently training high quality text-to-image diffusion models — brought to the public by [Luke Carlson](https://github.com/luke-carlson), [Jiatao Gu](https://github.com/MultiPath), [Shuangfei Zhai](https://github.com/Shuangfei), and [Navdeep Jaitly](https://github.com/ndjaitly).
 
 
 ---
@@ -79,7 +79,7 @@ We've uploaded model checkpoints to:
 
 Feel free to download the models or skip further down to train your own. Once a pretrained model is downloaded locally, you can use it in our web demo, pass it as an argument to training, sampling, and more.
 
-```bash
+```console
 export ASSET_PATH=https://docs-assets.developer.apple.com/ml-research/models/mdm
 
 curl $ASSET_PATH/flickr64/vis_model.pth --output vis_model_64x64.pth
@@ -91,7 +91,7 @@ curl $ASSET_PATH/flickr1024/vis_model.pth --output vis_model_1024x1024.pth
 ### Web Demo
 You can run your own instance of the web demo (after downloading the checkpoints) with this command:
 
-```bash
+```console
 torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port $YOUR_PORT
 ```
 
@@ -133,7 +133,7 @@ In the `ml_mdm.models` submodule, we've open sourced our implementations of:
 
 Once you've installed `ml_mdm`, download these checkpoints into the repo's directory.
 
-```
+```console
 curl https://docs-assets.developer.apple.com/ml-research/models/mdm/flickr64/vis_model.pth --output vis_model_64x64.pth
 curl https://docs-assets.developer.apple.com/ml-research/models/mdm/flickr256/vis_model.pth --output vis_model_256x256.pth
 ```
@@ -145,7 +145,7 @@ The web demo will load each model with a corresponding configuration:
 
 In the demo, you can change a variety of settings and peek into the internals of the model. Set the port you'd like to use by swapping in `$YOUR_PORT` and then run:
 
-```
+```console
 torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port $YOUR_PORT
 ```
 
@@ -154,7 +154,7 @@ If you just want to step through the process of training a model and running a p
 
 > Feel free to try changing a variety of --args either directly in the cli or by editing the config yaml file
 
-```
+```console
 torchrun --standalone --nproc_per_node=1 ml_mdm/clis/train_parallel.py \
  --file-list=tests/test_files/sample_training_0.tsv \
  --multinode=0 \
@@ -174,7 +174,7 @@ You should see a `outputs/vis_model_000100.pth` file. Now lets do something a bi
 
 > The script is based on [img2dataset's CC12M script](https://github.com/rom1504/img2dataset/blob/main/dataset_examples/cc12m.md).
 
-```
+```console
 curl https://storage.googleapis.com/conceptual_12m/cc12m.tsv | head -n 1000 > cc12m_index.tsv
 
 # Add headers to the file
@@ -186,13 +186,13 @@ Then prepare and split into train/validation
 
 > This script requires `img2dataset`, either run `pip install '.[data_prep]'` or just `pip install img2dataset`
 
-```
+```console
 python3 -m ml_mdm.clis.scrape_cc12m \
   --cc12m_index cc12m_index.tsv \
   --cc12m_local_dir cc12m_download
 ```
 After running this command you will see the following files:
-```
+```console
 training.0.tsv # train index file
 validation.tsv # validation index file
 cc12m_download/
@@ -203,7 +203,7 @@ cc12m_download/
 ### 2. Train
 Now that we have our training file, we can select a model config and pass any additional training arguments:
 
-```
+```console
 # Modify torchrun arguments to fit your GPU setup
 torchrun --standalone --nproc_per_node=8 ml_mdm/clis/train_parallel.py \
   --file-list=training_0.tsv \
@@ -216,7 +216,7 @@ torchrun --standalone --nproc_per_node=8 ml_mdm/clis/train_parallel.py \
 > If you've downloaded a pretrained model, you can set the `--pretrained-vision-file` argument to point to its location on disk
 
 Once training completes, you'll find the model in the folder defined by the --output-dir argument:
-```
+```console
 2024-07-22:17:58:46,649 INFO     [model_ema.py:33] Saving EMA model file: /mnt/data/outputs/vis_model_000100.pth
 2024-07-22:17:58:47,448 INFO     [unet.py:794] Saving model file: /mnt/data/outputs/vis_model_noema_000100.pth
 ```
@@ -224,7 +224,7 @@ Once training completes, you'll find the model in the folder defined by the --ou
 
 ### 3. Sample from the model
 Now that we have a trained model, we can generate samples from the diffusion model:
-```
+```console
 torchrun --standalone --nproc_per_node=1 ml_mdm/clis/generate_batch.py \
   --config_path configs/models/cc12m_64x64.yaml \
   --min-examples 3 --test-file-list validation.tsv \
@@ -261,7 +261,7 @@ reader_config:
 
 
 Then you can use our dataset download helper:
-```
+```console
 python -m ml_mdm.clis.download_tar_from_index \
   --dataset-config-file configs/datasets/cc12m.yaml \
   --subset train --download_tar
@@ -304,7 +304,7 @@ eval:
 
 ### Dataset Structure
 The S3 Bucket contains a series of files in this format, take a look at `ml_mdm/clis/scrape_cc12m.py` to generate your own.
-```bash
+```console
 2023-04-01 01:31:30   36147200 images_00000.tar
 2023-05-10 11:34:49    1108424 images_00000.tsv
 2023-04-01 01:31:26   36454400 images_00001.tar

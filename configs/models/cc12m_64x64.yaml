@@ -16,17 +16,20 @@ sample_image_size: 64
 test_file_list: validation.tsv
 device: cuda
 model: unet
-
 output_dir: /mnt/data/outputs
-num_diffusion_steps: 1000
-reproject_signal: false
-predict_variances: false
-model_output_scale: 0
-prediction_type: V_PREDICTION
-loss_target_type: HA_STYLE
-schedule_type: DEEPFLOYD
+
+diffusion_config:
+  sampler_config:
+    num_diffusion_steps: 1000
+    reproject_signal: false
+    predict_variances: false
+    prediction_type: V_PREDICTION
+    loss_target_type: HA_STYLE
+    schedule_type: DEEPFLOYD
+  model_output_scale: 0
+  use_vdm_loss_weights: false
+
 prediction_length: 129
-use_vdm_loss_weights: false
 loss_factor: 1
 num_training_steps: 5000
 num_epochs: 20000

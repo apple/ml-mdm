@@ -261,7 +261,7 @@ class NestedModel(Model):
         # recompute the noise from pred_low
         if not self.diffusion_config.no_use_residual:
             assert (
-                self.diffusion_config.mixed_batch is None
+                self.diffusion_config.mixed_ratio is None
             ), "do not support mixed-batch"
             x_t, x_t_low = x_t
             pred, pred_low = p_t
