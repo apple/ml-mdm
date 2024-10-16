@@ -77,21 +77,6 @@ unet_config:
   temporal_mode: false
   temporal_positional_encoding: false
   temporal_spatial_ds: false
-diffusion_config:
-  sampler_config:
-    num_diffusion_steps: 1000
-    reproject_signal: False
-    schedule_type: DEEPFLOYD
-    prediction_type: V_PREDICTION
-    loss_target_type: DDPM
-    beta_start: 0.0001
-    beta_end: 0.02
-    threshold_function: CLIP
-    rescale_schedule: 1.0
-    schedule_shifted: True
-  model_output_scale: 0.0
-  use_vdm_loss_weights: False
-  no_use_residual: true
 
 reader_config:
   image_size: 256
