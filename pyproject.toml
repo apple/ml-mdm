@@ -23,7 +23,7 @@ dependencies = [
     "imageio[ffmpeg]",
     "matplotlib",
     "mlx-data",
-    "numpy",
+    "numpy<2",
     "pytorch-model-summary",
     "rotary-embedding-torch",
     "simple-parsing==0.1.5",
