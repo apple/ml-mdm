@@ -21,7 +21,6 @@ def test_unet_in_pipeline():
 def test_config_cc12m_64x64():
     """Check that the 'cc12m_64x64' configuration file loads successfully for all pipeline modes (trainer, sampler, demo)."""
     f = "configs/models/cc12m_64x64.yaml"
-    f = "configs/models/cc12m_64x64.yaml"
     args = config.get_arguments(
         mode="trainer",
         additional_config_paths=[f],
