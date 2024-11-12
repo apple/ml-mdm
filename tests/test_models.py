@@ -13,6 +13,7 @@ from ml_mdm.clis.generate_sample import setup_models
 
 
 def test_initialize_unet():
+    """Test UNet model and EMA initialization with default configs."""
     unet_config = models.unet.UNetConfig()
     diffusion_config = diffusion.DiffusionConfig(
         use_vdm_loss_weights=True, model_output_scale=0.1
@@ -30,6 +31,7 @@ def test_initialize_unet():
 
 
 def test_all_registered_models():
+    """Test instantiation of all models in the registry with default configs."""
     for config_name, additional_info in config.MODEL_CONFIG_REGISTRY.items():
         model_name = additional_info["model"]
         config_cls = additional_info["config"]
@@ -44,6 +46,7 @@ def test_all_registered_models():
 
 @pytest.mark.gpu
 def test_initialize_pretrained():
+    """Test loading pretrained 64x64 model on GPU if available."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     args = config.get_arguments(
