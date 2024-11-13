@@ -54,11 +54,11 @@ def main(args):
     local_rank, global_rank, world_size = init_distributed_singlenode(timeout=36000)
 
     input_channels = 3
-    device = "cpu"
+    device = torch.device("cpu")
     if torch.cuda.is_available():
-        device = "cuda"
+        device = torch.device("cuda")
     elif torch.backends.mps.is_available():
-        device = "mps"
+        device = torch.device("mps")
     tokenizer, language_model = factory.create_lm(args, device=device)
     language_model_dim = language_model.embed_dim
 
