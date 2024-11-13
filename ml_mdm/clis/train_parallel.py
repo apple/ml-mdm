@@ -251,8 +251,8 @@ def main(args):
             exp_avg_loss = loss_val
             exp_avg_loss_var = loss_val**2
         total_loss_val += loss_val
-        print(f"Allocated memory: {torch.mps.current_allocated_memory() / 1024**3:.2f} GB", end='')
-        print(f"Val loss: {loss_val}")
+        # print(f"Allocated memory: {torch.mps.current_allocated_memory() / 1024**3:.2f} GB", end='')
+        # print(f"Val loss: {loss_val}")
 
         if (not accumulate_gradient) and (global_rank == 0):
             metrics = {
