@@ -53,3 +53,6 @@ def test_process_text():
     )
     assert len(tokens) > 0
     assert len(tokens[0]) > 0
+
+
+test_get_dataset()
