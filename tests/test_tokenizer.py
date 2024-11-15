@@ -4,6 +4,7 @@
 import logging
 
 # Tokenizer class from tokenizer.py
+from pathlib import Path    
 from ml_mdm.language_models.tokenizer import Tokenizer # Tokenizer class from tokenizer.py
 
 # Vocab files are in /ml-mdm/data/
@@ -14,7 +15,8 @@ from ml_mdm.language_models.tokenizer import Tokenizer # Tokenizer class from to
 
 
 def test_tokenizer_bert():
-    f = "../data/bert.vocab" 
+    # f = "../data/bert.vocab" 
+    f = Path(__file__).parent/"data/bert.vocab"     # To solve from relative to absolute import
     assert Tokenizer(f, mode="bert")
     #Q: should we assert the contents of tokenizer?
 
