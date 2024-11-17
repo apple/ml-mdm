@@ -115,7 +115,7 @@ class UNetConfig:
     temporal_spatial_ds: bool = field(default=False)
     temporal_positional_encoding: bool = field(default=False)
     resnet_config: ResNetConfig = field(
-        default=ResNetConfig(), metadata={"help": "Resnet configs"}
+        default_factory=ResNetConfig, metadata={"help": "Resnet configs"}
     )
 
     def __post_init__(self):
