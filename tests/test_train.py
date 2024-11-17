@@ -23,6 +23,7 @@ ml_mdm/clis/train_parallel.py --file-list=tests/test_files/sample_training_0.tsv
     reason="more effective to test this with torchrun, just here for documentation"
 )
 def test_small():
+    """Test minimal training run with single process setup."""
     os.environ["RANK"] = "0"
     os.environ["WORLD_SIZE"] = "1"
     os.environ["LOCAL_RANK"] = "0"
