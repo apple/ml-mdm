@@ -8,6 +8,10 @@ from ml_mdm.language_models import factory
 
 
 def test_small_batch():
+    """
+    Test small batch generation with T5 model.
+    Check that basic data generation pipeline works with minimal settings.
+    """
     args = Namespace(
         batch_size=10,
         test_file_list="tests/test_files/sample_training_0.tsv",
@@ -33,6 +37,12 @@ def test_small_batch():
 
 
 def test_generate_batch():
+    """
+    Test batch generation with default config settings.
+
+    Note: This test currently only sets up the configuration but doesn't execute
+    the generation (ends with pass statement).
+    """
     args = config.get_arguments(mode="sampler")
     args.batch_size = 10
     args.test_file_list = "tests/test_files/sample_training_0.tsv"

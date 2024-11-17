@@ -4,6 +4,10 @@ from ml_mdm import config
 
 
 def test_load_flick_config():
+    """
+    Test loading of cc12m_64x64.yaml config file.
+    Checks image dimensions are correctly loaded in reader config.
+    """
     args = config.get_arguments(
         "",
         mode="demo",
