@@ -31,11 +31,11 @@ dependencies = [
     "tensorboard==2.16.2",
     "torchinfo",
     "torchmetrics[image]",
-    "torchvision",
+    "torchvision>=0.20.1",
     "transformers",
     "sentencepiece",
     "boto3",
-    "torch==2.5.1",
+    "torch>=2.5.1",
     "pytest",
     "pytest-cov",
     "pre-commit"
