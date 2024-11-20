@@ -29,8 +29,8 @@ def sv(x, f):
 @dataclass
 class DiffusionConfig:
     sampler_config: samplers.SamplerConfig = field(
-        default_factory=samplers.SamplerConfig,  # Changed from default=samplers.SamplerConfig(), 
-        metadata={"help": "Sampler configuration"}
+        default_factory=samplers.SamplerConfig,
+        metadata={"help": "Sampler configuration"},
     )
     model_output_scale: float = field(
         default=0,
