@@ -99,7 +99,28 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 
 ## Codebase
 
-1. ml_mdm 
+
+1. configs
+
+| module | description |
+| - | - |
+| `configs.dataset_creation` | Configuration file for dataset splitting into train-eval-val pipeline |
+| `configs.datasets` | Datasets for training and evaluation phases of the model |
+| `configs.models` | Configuration files for different resolution models |
+
+
+2. data
+
+| module | description |
+| - | - |
+| |  |
+| `data` | - bert.vocab: BERT-sourced dictionary of tokens containing text data and their associated vector representations 
+- jdhjwjsdjiejej
+- idjdjkdkkd |
+
+3. docs
+4. ml_mdm 
+
 | module | description |
 | - | - |
 | `ml_mdm.models` | The core model implementations |
@@ -107,6 +128,8 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 | `ml_mdm.config` | Connects configuration dataclasses with associated models, pipelines, and clis using [simple parsing](https://github.com/lebrice/SimpleParsing/blob/master/README.md) |
 | `ml_mdm.clis` | All command line tools in the project, the most relevant being `train_parallel.py` |
 | `tests/` | Unit tests and sample training files |
+
+5. tests
 
 
 
