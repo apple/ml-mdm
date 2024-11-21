@@ -99,6 +99,7 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 
 ## Codebase
 
+1. ml_mdm 
 | module | description |
 | - | - |
 | `ml_mdm.models` | The core model implementations |
