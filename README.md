@@ -113,10 +113,8 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 
 | module | description |
 | - | - |
-| |  |
-| `data` | - bert.vocab: BERT-sourced dictionary of tokens containing text data and their associated vector representations 
-- jdhjwjsdjiejej
-- idjdjkdkkd |
+| `data` | <ul><li>bert.vocab: BERT-sourced dictionary of tokens containing text data and their associated vector representations </li><li>bert.vocab: BERT-sourced dictionary of tokens containing text data and their associated vector representations </li></ul> |
+
 
 3. docs
 
