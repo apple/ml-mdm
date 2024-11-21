@@ -119,6 +119,7 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 - idjdjkdkkd |
 
 3. docs
+
 4. ml_mdm 
 
 | module | description |
@@ -130,8 +131,6 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 | `tests/` | Unit tests and sample training files |
 
 5. tests
-
-
 
 # Concepts
 
