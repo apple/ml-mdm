@@ -100,7 +100,7 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 ## Codebase
 
 
-1. configs
+### 1. /configs
 
 | module | description |
 | - | - |
@@ -109,19 +109,19 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 | `configs.models` | Configuration files for different resolution models |
 
 
-2. data
+### 2. /data
 
 | module | description |
 | - | - |
 | `data` | <ul><li><b>bert.vocab:</b> BERT-trained dictionary containing tokens and their associated vector representations</li><li><b>c4_wpm.vocab:</b> C4-trained dictionary containing tokens and their associated vector representations</li><li><b>cifar10.vocab:</b> CIFAR10-trained dictionary containing tokens and their associated vector representations</li><li><b>imagenet.vocab:</b> Prompts associated with Imagenet dataset</li><li><b>prompts_cc12m-64x64.tsv:</b> Prompts associated with cc12m dataset for the 64x64 res. model</li><li><b>prompts_cc12m-256x256.tsv:</b> Prompts associated with cc12m dataset for the 256x256 res. model</li><li><b>prompts_cifar10-32x32.tsv:</b> Prompts associated with cifar10 dataset for the 32x32 res. model </li><li><b>prompts_cifar10-64x64.tsv:</b> Prompts associated with cifar10 dataset for the 64x64 res. model </li><li><b>prompts_demo.tsv:</b> Extra demo prompts </li><li><b>prompts_imagenet-64px.tsv:</b> Prompts associated with imagenet dataset for the 64x64 res. model </li><li><b>prompts_WebImage-ALIGN-64px.tsv:</b> Prompts associated with WebImage-ALIGN dataset for the 64x64 res. model </li><li><b>t5.vocab:</b> t5-trained dictionary containing tokens and their associated vector representations </li><li><b>tokenizer_spm_32000_50m.vocab:</b> SPM-trained dictionary containing tokens and their associated vector representations </li></ul> |
 
-3. docs
+### 3. /docs
 
 | module | description |
 | - | - |
 | `docs` | <ul><li>web_demo.png: Screenshot of the web demo of the model</li></ul> |
 
-4. ml_mdm 
+### 4. /ml_mdm 
 
 | module | description |
 | - | - |
@@ -131,7 +131,7 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 | `ml_mdm.clis` | All command line tools in the project, the most relevant being `train_parallel.py` |
 | `tests/` | Unit tests and sample training files |
 
-5. tests
+### 5. /tests
 
 | module | description |
 | - | - |
