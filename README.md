@@ -113,10 +113,13 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 
 | module | description |
 | - | - |
-| `data` | <ul><li>bert.vocab: BERT-sourced dictionary of tokens containing text data and their associated vector representations </li><li>bert.vocab: BERT-sourced dictionary of tokens containing text data and their associated vector representations </li></ul> |
-
+| `data` | <ul><li>bert.vocab: BERT-trained dictionary containing tokens and their associated vector representations</li><li>c4_wpm.vocab: C4-trained dictionary containing tokens and their associated vector representations</li><li>cifar10.vocab: CIFAR10-trained dictionary containing tokens and their associated vector representations</li><li>imagenet.vocab:</li><li>prompts_cc12m-64x64.tsv: Prompts for the 64x64 model</li><li>prompts_cc12m-64x64.tsv: Prompts for the 64x64 model</li><li>prompts_cc12m-256x256.tsv: </li><li>prompts_cifar10-32x32.tsv </li><li>prompts_cifar10-64x64.tsv </li><li>prompts_demo.tsv </li><li>prompts_imagenet-64px.tsv </li><li>prompts_WebImage-ALIGN-64px.tsv </li><li>t5.vocab </li><li>tokenizer_spm_32000_50m.vocab </li></ul> |
 
 3. docs
+
+| module | description |
+| - | - |
+| `docs` | <ul><li>web_demo.png: Screenshot of the web demo of the model</li></ul> |
 
 4. ml_mdm 
 
@@ -129,6 +132,10 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 | `tests/` | Unit tests and sample training files |
 
 5. tests
+
+| module | description |
+| - | - |
+| `tests.test_files` | Sample files for testing |
 
 # Concepts
 
