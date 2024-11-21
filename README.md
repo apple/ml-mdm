@@ -119,7 +119,7 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 
 | module | description |
 | - | - |
-| `docs` | <ul><li>web_demo.png: Screenshot of the web demo of the model</li></ul> |
+| `docs` | <ul><li><b>web_demo.png:</b> Screenshot of the web demo of the model</li></ul> |
 
 ### 4. /ml_mdm 
 
