@@ -69,6 +69,8 @@ def setup_models(args, device):
 
 
 def plot_logsnr(logsnrs, total_steps):
+    import matplotlib
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 
     x = 1 - np.arange(len(logsnrs)) / (total_steps - 1)
