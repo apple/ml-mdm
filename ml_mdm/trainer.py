@@ -6,17 +6,17 @@ import torch.nn as nn
 
 
 def train_batch(
-    model,
-    sample,
-    optimizer,
-    scheduler,
-    logger,
-    args,
-    grad_scaler=None,
-    accumulate_gradient=False,
-    num_grad_accumulations=1,
-    ema_model=None,
-    loss_factor=1,
+    model: torch.nn.Module,
+    sample: dict,
+    optimizer: torch.optim.Optimizer,
+    scheduler: torch.optim.lr_scheduler.LRScheduler,
+    logger: Optional[torch.utils.tensorboard.SummaryWriter],
+    args: Namespace,
+    grad_scaler: Optional[torch.cuda.amp.GradScaler] = None,
+    accumulate_gradient: bool = False,
+    num_grad_accumulations: int =1,
+    ema_model: Optional[nn.Module] = None,
+    loss_factor: float = 1.0,
 ):
     model.train()
     lr = scheduler.get_last_lr()[0]

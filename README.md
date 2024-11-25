@@ -64,8 +64,9 @@ Developers should set up `pre-commit` as well with `pre-commit install`.
 ### Running Test Cases
 
 ```
-> pytest   # will run all test cases - including ones that require a gpu
-> pytest  -m "not gpu"  # run test cases that can work with just cpu
+> pytest   # run test cases that can work with just cpu
+> pytest  -m ''  # will run all test cases - including ones that require a gpu
+> pytest -m gpu # run only gpu test cases
 ```
 
 
