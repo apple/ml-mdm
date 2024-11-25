@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .tokenizer import Tokenizer
+from ml_mdm.language_models.tokenizer import Tokenizer     
 
 
 class T5Encoder(T5ForConditionalGeneration):
