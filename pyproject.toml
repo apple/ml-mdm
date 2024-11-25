@@ -53,7 +53,7 @@ known_numeric = ["torch", "torchvision", "numpy", "jax", "flax", "mlx"]
 
 
 [tool.pytest.ini_options]
-addopts = "--cov=ml_mdm"
+addopts = "--cov=ml_mdm -m 'not gpu'"
 markers = [
     "gpu" # tests that require a gpu
 ]
