@@ -17,33 +17,39 @@ description = "A python package to simplify the creation of text conditioned ima
 dependencies = [
     "dataclass-wizard",
     "einops",
-    "fastapi>=0.109.1", # Required due to CVE-2024-24762
-    "gradio>=4.14", # Required due to CVE-2023-6572
     "httpx==0.24.1",
-    "imageio[ffmpeg]",
-    "matplotlib",
     "mlx-data",
     "numpy<2",
-    "pytorch-model-summary",
-    "rotary-embedding-torch",
     "simple-parsing==0.1.5",
-    "tensorboardX==2.6.2.2",
-    "tensorboard==2.16.2",
-    "torchinfo",
-    "torchmetrics[image]",
     "torchvision",
     "transformers",
     "sentencepiece",
-    "boto3",
     "torch==2.2.2",
-    "pytest",
-    "pytest-cov",
-    "pre-commit"
 ]
 
 [project.optional-dependencies]
 data_prep = [
-    "img2dataset"
+    "img2dataset",
+    "boto3",
+]
+web_demo = [
+    "fastapi>=0.109.1", # Required due to CVE-2024-24762
+    "gradio>=4.14", # Required due to CVE-2023-6572
+    "matplotlib",
+    "imageio[ffmpeg]",
+]
+training = [
+    "tensorboard==2.16.2",
+    "tensorboardX==2.6.2.2",
+    "torchmetrics[image]",
+    "rotary-embedding-torch",
+    "pytorch-model-summary",
+    "torchinfo",
+]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pre-commit",
 ]
 
 [tool.isort]
