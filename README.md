@@ -292,11 +292,11 @@ reader_config:
 Then you can use our dataset download helper:
 ```console
 python -m ml_mdm.clis.download_tar_from_index \
-  --dataset-config-file configs/datasets/cc12m.yaml \
+  --dataset_config_file configs/datasets/cc12m.yaml \
   --subset train --download_tar
 
 python -m ml_mdm.clis.download_tar_from_index \
-  --dataset-config-file configs/datasets/cc12m.yaml \
+  --dataset_config_file configs/datasets/cc12m.yaml \
   --subset eval --download_tar
 ```
 
