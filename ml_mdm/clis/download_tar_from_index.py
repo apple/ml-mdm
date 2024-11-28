@@ -17,7 +17,7 @@ In addtion it takes arguments for the subset that this job will handle
 nodes this data will be distributed over.
 """
 
-import argparse
+import simple_parsing
 import csv
 import logging
 import os
@@ -33,7 +33,30 @@ import yaml
 import mlx.data
 
 from ml_mdm import helpers, s3_helpers
+from dataclasses import dataclass, field
 
+@dataclass
+class DownloadConfig:
+    dataset_config_file: str = field(default="", 
+        metadata={"help": "yaml file with dataset names"})
+    worker_id: int = field(default=0, 
+        metadata={"help": "current worker in [0, num-downloaders -1]"})
+    num_downloaders: int = field(default=1, 
+        metadata={"help": "number of parallel downloaders"})
+    no_bandwidth: bool = field(default=False)
+    download_tar: bool = field(default=False, 
+        metadata={"help": "whether or not to download tar files also"})
+    pretrained_text_embeddings: str = field(default=None)
+    endpoint_url: str = field(default="", 
+        metadata={"help": "end point for the s3 bucket — uses environment variable AWS_ENDPOINT_URL otherwise"})
+    subset: str = field(default="train", 
+        metadata={"choices": ["train", "eval"], 
+                  "help": "subset to download [train|eval]"})
+
+def get_parser():
+    parser = simple_parsing.ArgumentParser(description="Download tar files referred to in index file from mlx")
+    parser.add_arguments(DownloadConfig, dest="options")
+    return parser
 
 def read_tsv(filename):
     # Open the TSV file for reading
@@ -331,44 +354,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Download tar files referred to in index file from mlx"
-    )
-    parser.add_argument(
-        "--dataset-config-file",
-        type=str,
-        default="",
-        help="yaml file with dataset names",
-    )
-    parser.add_argument(
-        "--worker-id",
-        type=int,
-        default=0,
-        help="current worker in [0, num-downloaders -1]",
-    )
-    parser.add_argument(
-        "--num-downloaders", type=int, default=1, help="number of parallel downloaders"
-    )
-    parser.add_argument("--no_bandwidth", action="store_true")
-    parser.add_argument(
-        "--download_tar",
-        action="store_true",
-        help="whether or not to download tar files also",
-    )
-    parser.add_argument("--pretrained-text-embeddings", type=str, default=None)
-    parser.add_argument(
-        "--endpoint-url",
-        type=str,
-        default="",
-        help="end point for the s3 bucket — uses environment variable AWS_ENDPOINT_URL otherwise",
-    )
-    parser.add_argument(
-        "--subset",
-        type=str,
-        default="train",
-        choices=["train", "eval"],
-        help="subset to download [train|eval]",
-    )
+    parser = get_parser()
     args = parser.parse_args()
     logging.basicConfig(
         level="INFO",
@@ -377,5 +363,5 @@ if __name__ == "__main__":
         ),
         datefmt="%H:%M:%S",
     )
-    helpers.print_args(args)
-    main(args)
+    helpers.print_args(args.options)
+    main(args.options)

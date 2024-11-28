@@ -1,6 +1,7 @@
 # For licensing see accompanying LICENSE file.
 # Copyright (C) 2024 Apple Inc. All rights reserved.
-import argparse
+
+import simple_parsing
 import json
 import logging
 import os
@@ -14,7 +15,38 @@ import numpy as np
 import torch
 
 from ml_mdm import helpers
+from dataclasses import dataclass, field
 
+@dataclass
+class MetricsConfig:
+    loglevel: str = field(default="INFO", 
+        metadata={"help": "Logging level"})
+    sample_dir: str = field(default="", 
+        metadata={"help": "directory with samples"})
+    metrics: str = field(default="clip,fid", 
+        metadata={"help": "Metrics to compute(comma separated)"})
+    reference_dir: str = field(default="", 
+        metadata={"help": "directory with reference images"})
+    num_samplers: int = field(default=1, 
+        metadata={"help": "Number of jobs generating samples"})
+    num_training_steps: int = field(default=850000, 
+        metadata={"help": "# of training steps to train for"})
+    max_caption_length: int = field(default=77, 
+        metadata={"help": "Maximum length of caption"})
+    eval_freq: int = field(default=1000, 
+        metadata={"help": "Minimum Evaluation interval"})
+    clip_model: str = field(default="openai/clip-vit-base-patch16", 
+        metadata={"help": "Model to use for clip scores"})
+    inception_layer_fid: int = field(default=2048, 
+        metadata={
+            "choices": [64, 192, 768, 2048], 
+            "help": "Which layer of inception to use for fid"
+        })
+    
+def get_parser():
+    parser = simple_parsing.ArgumentParser(description="Compute metrics on samples from diffusion model")
+    parser.add_arguments(MetricsConfig, dest="options")
+    return parser
 
 def load_captions_and_images(dir_name, args, override_path=None):
     map_files = []
@@ -140,54 +172,12 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Compute metrics on samples from diffusion model"
-    )
-    parser.add_argument("--loglevel", type=str, default="INFO", help="Logging level")
-    parser.add_argument(
-        "--sample-dir", type=str, default="", help="directory with samples"
-    )
-    parser.add_argument(
-        "--metrics",
-        type=str,
-        default="clip,fid",
-        help="Metrics to compute(comma separated)",
-    )
-    parser.add_argument(
-        "--reference-dir", type=str, default="", help="directory with reference images"
-    )
-    parser.add_argument(
-        "--num-samplers", type=int, default=1, help="Number of jobs generating samples"
-    )
-    parser.add_argument(
-        "--num-training-steps",
-        type=int,
-        default=850000,
-        help="# of training steps to train for",
-    )
-    parser.add_argument(
-        "--max-caption-length", type=int, default=77, help="Maximum length of caption"
-    )
-    parser.add_argument(
-        "--eval-freq", type=int, default=1000, help="Minimum Evaluation interval"
-    )
-    parser.add_argument(
-        "--clip-model",
-        type=str,
-        default="openai/clip-vit-base-patch16",
-        help="Model to use for clip scores",
-    )
-    parser.add_argument(
-        "--inception-layer-fid",
-        type=int,
-        default=2048,
-        choices=[64, 192, 768, 2048],
-        help="Which layer of inception to use for fid",
-    )
+    parser = get_parser()
     args = parser.parse_args()
     logging.basicConfig(
-        level=getattr(logging, args.loglevel.upper(), None),
+        level=getattr(logging, args.options.loglevel.upper(), None),
         format="[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s",
         datefmt="%H:%M:%S",
     )
-    main(args)
+    helpers.print_args(args.options)
+    main(args.options)
