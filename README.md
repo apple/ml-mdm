@@ -159,10 +159,12 @@ In the `ml_mdm.models` submodule, we've open sourced our implementations of:
 `MODEL_REGISTRY` and `PIPELINE_REGISTRY` store information as shown in the following example
 
 > *_CONFIG_REGISTRY[architecture name]["model"] = model name
+
 > *_CONFIG_REGISTRY[architecture name]["config"] = configuration class
 
 MODEL_CONFIG_REGISTRY and PIPELINE_CONFIG_REGISTRY stores information as shown in the following example: 
 > *_CONFIG_REGISTRY[architecture name]["model"] = model name
+
 > *_CONFIG_REGISTRY[architecture name]["config"] = configuration class
 
 
