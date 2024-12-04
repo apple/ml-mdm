@@ -77,7 +77,10 @@ def setup_models(args, device):
     return tokenizer, language_model, diffusion_model
 
 
+
 def plot_logsnr(logsnrs: list, total_steps: int) -> np.ndarray:
+    import matplotlib
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 
     x = 1 - np.arange(len(logsnrs)) / (total_steps - 1)

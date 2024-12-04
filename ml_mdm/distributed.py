@@ -32,7 +32,8 @@ def init_distributed_singlenode(timeout=0):
     rank = int(os.environ.get("RANK", "0"))
     world_size = int(os.environ.get("WORLD_SIZE", "1"))
     local_rank = int(os.environ.get("LOCAL_RANK", "0"))
-    if not "MASTER_ADDR" in os.environ:
+
+    if not "MASTER_ADDR" in os.environ or world_size == 1:
         return local_rank, rank, world_size
 
     if timeout == 0:
