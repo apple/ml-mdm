@@ -50,7 +50,7 @@ def train_batch(
             grad_scaler.step(optimizer)
             grad_scaler.update()
             if ema_model is not None:
-                ema_model.update(model.model.module.vision_model)
+                ema_model.update(getattr(model.model, "module", model.model).vision_model)
     else:
         losses, times, x_t, means, targets, weights = model.get_loss(sample)
         if weights is None:
@@ -74,7 +74,7 @@ def train_batch(
             ).item()
             optimizer.step()
             if ema_model is not None:
-                ema_model.update(model.model.module.vision_model)
+                ema_model.update(getattr(model.model, "module", model.model).vision_model)
 
     if logger is not None and not accumulate_gradient:
         logger.add_scalar("train/Loss", loss_val)
