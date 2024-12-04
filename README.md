@@ -154,6 +154,22 @@ In the `ml_mdm.models` submodule, we've open sourced our implementations of:
 > In essence, `simple_parsing` will convert all passed cli arguments and yaml files into clean configuration classes like `ml_mdm.reader.ReaderConfig`, `ml_mdm.diffusion.DiffusionConfig`.
 
 
+`ml_mdm.config` stores a global mapping of names to classes in `MODEL_REGISTRY`, `MODEL_CONFIG_REGISTRY`, `PIPELINE_REGISTRY`, and `PIPELINE_CONFIG_REGISTRY`.
+
+`MODEL_REGISTRY` and `PIPELINE_REGISTRY` store information as shown in the following example:
+
+> *_CONFIG_REGISTRY[architecture name]["model"] = model name
+
+> *_CONFIG_REGISTRY[architecture name]["config"] = configuration class
+
+MODEL_CONFIG_REGISTRY and PIPELINE_CONFIG_REGISTRY store information as shown in the following example: 
+> *_CONFIG_REGISTRY[architecture name]["model"] = model name
+
+> *_CONFIG_REGISTRY[architecture name]["config"] = configuration class
+
+
+architecture name and model name are passed into ml_mdm.config through the function parameter *names. where *names points to "architecture name", "model name"
+
 
 
 # Tutorials
