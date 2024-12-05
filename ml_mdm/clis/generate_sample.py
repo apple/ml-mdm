@@ -1,11 +1,12 @@
 # For licensing see accompanying LICENSE file.
 # Copyright (C) 2024 Apple Inc. All rights reserved.
+import argparse
 import logging
 import os
 import shlex
 import time
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
 
 import gradio as gr
 import simple_parsing
@@ -36,7 +37,7 @@ logging.basicConfig(
 )
 
 
-def dividable(n):
+def dividable(n: int) -> Tuple[int, int]:
     for i in range(int(np.sqrt(n)), 0, -1):
         if n % i == 0:
             break
@@ -51,7 +52,7 @@ def generate_lm_outputs(device, sample, tokenizer, language_model, args):
     return sample
 
 
-def setup_models(args, device):
+def setup_models(args: argparse.Namespace, device: torch.device):
     input_channels = 3
 
     # load the language model
@@ -112,32 +113,32 @@ def stop_run():
     )
 
 
-def get_model_type(config_file):
+def get_model_type(config_file: str):
     with open(config_file, "r") as f:
         d = yaml.safe_load(f)
         return d.get("model", d.get("vision_model", "unet"))
 
 
 def generate(
-    config_file="cc12m_64x64.yaml",
-    ckpt_name="vis_model_64x64.pth",
-    prompt="a chair",
-    input_template="",
-    negative_prompt="",
-    negative_template="",
-    batch_size=20,
-    guidance_scale=7.5,
-    threshold_function="clip",
-    num_inference_steps=250,
-    eta=0,
-    save_diffusion_path=False,
-    show_diffusion_path=False,
-    show_xt=False,
-    reader_config="",
-    seed=10,
-    comment="",
-    override_args="",
-    output_inner=False,
+    config_file: str = "cc12m_64x64.yaml",
+    ckpt_name: str = "vis_model_64x64.pth",
+    prompt: str = "a chair",
+    input_template: str = "",
+    negative_prompt: str = "",
+    negative_template: str = "",
+    batch_size: int = 20,
+    guidance_scale: float = 7.5,
+    threshold_function: str = "clip",
+    num_inference_steps: int = 250,
+    eta: int = 0,
+    save_diffusion_path: bool = False,
+    show_diffusion_path: bool = False,
+    show_xt: bool = False,
+    reader_config: str = "",
+    seed: int = 10,
+    comment: str = "",
+    override_args: str = "",
+    output_inner: bool = False,
 ):
     np.random.seed(seed)
     torch.random.manual_seed(seed)
