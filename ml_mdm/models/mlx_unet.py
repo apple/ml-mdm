@@ -332,9 +332,9 @@ class SelfAttention1D(nn.Module):
         else:
             self.ffn = None
         if pos_emb:
-            from rotary_embedding_mx import RotaryEmbedding
+            from mlx.nn import RoPE
 
-            self.pos_emb = RotaryEmbedding(dim=channels // self.num_heads)
+            self.pos_emb = RoPE(dim=channels // self.num_heads)
         else:
             self.pos_emb = None
 
