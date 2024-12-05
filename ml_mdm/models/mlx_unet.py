@@ -9,6 +9,7 @@ import einops
 
 import mlx.core as mx
 import mlx.nn as nn
+from mlx.utils import tree_flatten
 
 from ml_mdm import config
 from ml_mdm.utils import fix_old_checkpoints
@@ -764,22 +765,10 @@ class UNet(nn.Module):
     def model_type(self):
         return "unet"
 
-    """""
     def print_size(self, target_image_size=64):
-        summary(
-            self,
-            [
-                (1, self.input_channels, target_image_size, target_image_size),  # x_t
-                (1,),  # times
-                (1, 32, self.input_conditioning_feature_dim),  # conditioning
-                (1, 32),
-            ],  # condition_mask
-            dtypes=[mx.float, mx.float, mx.float, mx.float],
-            col_names=["input_size", "output_size", "num_params"],
-            row_settings=["var_names"],
-            depth=4,
-        )
-    """ ""
+        print(self)
+        for k, v in tree_flatten(consumer.tts_processor.model.parameters()):
+            print(f"{k} # parameters: {v.size}")
 
     def save(self, fname, other_items=None):
         logging.info(f"Saving model file: {fname}")
