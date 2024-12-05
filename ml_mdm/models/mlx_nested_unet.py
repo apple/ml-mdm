@@ -10,9 +10,7 @@ from torchinfo import summary
 
 import mlx.core as mx
 import mlx.nn as nn
-import numpy as np
-import torch
-import torch.distributed as dist
+import torch.distributed as dist  # Need to change these
 import torch.nn.functional as F
 
 from ml_mdm import config, s3_helpers
