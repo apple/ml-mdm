@@ -18,7 +18,6 @@ from ml_mdm import config, samplers
 
 
 def sv(x, f):
-    breakpoint()  # 1
     save_image(x, f, value_range=(-1, 1), normalize=True)
 
 
@@ -68,7 +67,6 @@ class Model(nn.Module):
         return self.vision_model.load(vision_file)
 
     def save(self, vision_file, other_items=None):
-        breakpoint()  # 4
         self.vision_model.save(vision_file, other_items=other_items)
 
     @property
@@ -120,16 +118,13 @@ class Diffusion(nn.Module):
 
     def get_xt_minus_1(self, t, x_t, lm_outputs, lm_mask):
         self.eval()
-        breakpoint()  # 8
         return self.sampler.get_xt_minus_1(t, x_t, lm_outputs, lm_mask)
 
     def get_pred_for_training(self, x_t, pred, g):
-        breakpoint()  # 9
         if (
             self._config.sampler_config.loss_target_type
             == self._config.sampler_config.prediction_type
         ):
-            breakpoint()  # 10
             return pred
         else:
             x0, _ = self.sampler.get_x0_eps_from_pred(
@@ -138,7 +133,6 @@ class Diffusion(nn.Module):
             pred = self.sampler.get_pred_from_x0_xt(
                 x_t, x0, g, self._config.sampler_config.loss_target_type
             )
-            breakpoint()  # 11
             return pred
 
     def get_micro_conditioning(self, sample: dict) -> dict:
@@ -148,7 +142,6 @@ class Diffusion(nn.Module):
         return micros
 
     def get_loss(self, sample: dict):
-        breakpoint()  # 13
         images, lm_outputs, lm_mask = (
             sample["images"],
             sample["lm_outputs"],
@@ -172,7 +165,6 @@ class Diffusion(nn.Module):
         )
         pred = self.get_pred_for_training(x_t, means, g)
         loss = self.loss_fn(pred, tgt).mean(axis=(1, 2, 3))
-        breakpoint()  # 14
         return loss, time, x_t, means, tgt, weights
 
     def get_noise(
@@ -207,10 +199,8 @@ class Diffusion(nn.Module):
     def partial_diffusion(
         self, images, t, lm_outputs, lm_mask, device, return_sequence=False
     ):
-        breakpoint()  # 17
         self.eval()
         (_, x_t, _, _) = self.sampler.get_noisy_samples_for_training(images, t)
-        breakpoint()  # 18
         return self.sampler.sample(
             x_t, lm_outputs, lm_mask, return_sequence=return_sequence, t=t
         )
@@ -323,7 +313,6 @@ class NestedDiffusion(Diffusion):
             self.mixed_ratio = self.mixed_ratio / self.mixed_ratio[-1]
 
     def get_loss(self, sample: dict):
-        breakpoint()  # 19
         images, lm_outputs, lm_mask = (
             sample["images"],
             sample["lm_outputs"],
@@ -395,5 +384,4 @@ class NestedDiffusion(Diffusion):
                 loss_ = pred[i].mean() * 0.0
             loss_ = loss_ * w[i]
             loss = loss + loss_
-        breakpoint()  # 20
         return loss, time, x_t[0], pred[0], tgt[0], weights
