@@ -6,12 +6,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List
 
-from torchinfo import summary
-
 import mlx.core as mx
 import mlx.nn as nn
 import torch.distributed as dist  # Need to change these
-import torch.nn.functional as F
 
 from ml_mdm import config, s3_helpers
 from ml_mdm.models.unet import UNet, UNetConfig, zero_module
