@@ -25,6 +25,12 @@ dependencies = [
     "transformers",
     "sentencepiece",
     "torch==2.2.2",
+    "matplotlib",
+    "gradio",
+    "boto3",
+    "torchmetrics",
+    "img2dataset",
+    "torchinfo"
 ]
 
 [project.optional-dependencies]

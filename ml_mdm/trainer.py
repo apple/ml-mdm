@@ -3,7 +3,8 @@
 import numpy as np
 import torch
 import torch.nn as nn
-
+from typing import Optional, Tuple 
+from argparse import Namespace
 
 def train_batch(
     model: torch.nn.Module,
