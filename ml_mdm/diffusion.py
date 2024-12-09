@@ -13,6 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.utils import save_image
 
+import ml_mdm.samplers
 from ml_mdm import config, samplers
 
 
@@ -59,10 +60,10 @@ class Model(nn.Module):
         self.vision_model = vision_model
         self.sampler = None
 
-    def set_sampler(self, sampler):
+    def set_sampler(self, sampler: ml_mdm.samplers.Sampler):
         self.sampler = sampler
 
-    def load(self, vision_file):
+    def load(self, vision_file: str) -> dict:
         return self.vision_model.load(vision_file)
 
     def save(self, vision_file, other_items=None):
@@ -103,7 +104,7 @@ class Diffusion(nn.Module):
             return self.model.module
         return self.model
 
-    def to(self, device):
+    def to(self, device: torch.device):
         self.model = self.model.to(device)
         self.sampler = self.sampler.to(device)
         return self
@@ -134,13 +135,13 @@ class Diffusion(nn.Module):
             )
             return pred
 
-    def get_micro_conditioning(self, sample):
+    def get_micro_conditioning(self, sample: dict) -> dict:
         micros, conditions = {}, self.get_model().vision_model.conditions
         if conditions is not None:
             micros = {key: sample[key] for key in conditions if key in sample}
         return micros
 
-    def get_loss(self, sample):
+    def get_loss(self, sample: dict):
         images, lm_outputs, lm_mask = (
             sample["images"],
             sample["lm_outputs"],
@@ -166,12 +167,25 @@ class Diffusion(nn.Module):
         loss = self.loss_fn(pred, tgt).mean(axis=(1, 2, 3))
         return loss, time, x_t, means, tgt, weights
 
-    def get_noise(self, num_examples, input_channels, image_side, device):
+    def get_noise(
+        self,
+        num_examples: int,
+        input_channels: int,
+        image_side: int,
+        device: torch.device,
+    ) -> torch.Tensor:
         return torch.randn(num_examples, input_channels, image_side, image_side).to(
             device
         )
 
-    def sample(self, num_examples, sample, image_side, device, **kwargs):
+    def sample(
+        self,
+        num_examples: int,
+        sample: dict,
+        image_side: int,
+        device: torch.device,
+        **kwargs: dict,
+    ):
         self.eval()
         noise = self.get_noise(
             num_examples, self.get_model().input_channels, image_side, device
@@ -298,7 +312,7 @@ class NestedDiffusion(Diffusion):
             )
             self.mixed_ratio = self.mixed_ratio / self.mixed_ratio[-1]
 
-    def get_loss(self, sample):
+    def get_loss(self, sample: dict):
         images, lm_outputs, lm_mask = (
             sample["images"],
             sample["lm_outputs"],
@@ -370,5 +384,4 @@ class NestedDiffusion(Diffusion):
                 loss_ = pred[i].mean() * 0.0
             loss_ = loss_ * w[i]
             loss = loss + loss_
-
         return loss, time, x_t[0], pred[0], tgt[0], weights

@@ -17,6 +17,8 @@ import numpy as np
 import torch
 from torchvision.utils import make_grid
 
+import ml_mdm.language_models.factory
+import ml_mdm.language_models.tokenizer
 from ml_mdm import helpers, reader
 from ml_mdm.config import get_arguments, get_model, get_pipeline
 from ml_mdm.language_models import factory
@@ -44,7 +46,13 @@ def dividable(n: int) -> Tuple[int, int]:
     return i, n // i
 
 
-def generate_lm_outputs(device, sample, tokenizer, language_model, args):
+def generate_lm_outputs(
+    device: torch.device,
+    sample: dict,
+    tokenizer: ml_mdm.language_models.tokenizer.Tokenizer,
+    language_model: ml_mdm.language_models.factory.LanguageModel,
+    args: argparse.Namespace,
+) -> dict:
     with torch.no_grad():
         lm_outputs, lm_mask = language_model(sample, tokenizer)
         sample["lm_outputs"] = lm_outputs
@@ -69,7 +77,8 @@ def setup_models(args: argparse.Namespace, device: torch.device):
     return tokenizer, language_model, diffusion_model
 
 
-def plot_logsnr(logsnrs, total_steps):
+
+def plot_logsnr(logsnrs: list, total_steps: int) -> np.ndarray:
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -106,14 +115,15 @@ class GLOBAL_DATA:
 global_config = GLOBAL_DATA()
 
 
-def stop_run():
+def stop_run() -> gr.component:
     return (
         gr.update(value="Run", variant="primary", visible=True),
         gr.update(visible=False),
     )
 
 
-def get_model_type(config_file: str):
+
+def get_model_type(config_file: str) -> str:
     with open(config_file, "r") as f:
         d = yaml.safe_load(f)
         return d.get("model", d.get("vision_model", "unet"))
@@ -295,7 +305,7 @@ def generate(
                 )
 
 
-def main(args):
+def main(args: argparse.Namespace):
     # get the language model outputs
     example_texts = open("data/prompts_demo.tsv").readlines()
 
