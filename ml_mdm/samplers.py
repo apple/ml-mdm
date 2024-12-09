@@ -26,6 +26,7 @@ class ScheduleType(Type):
     COSINE = 0
     DDPM = 2
     DEEPFLOYD = 3
+    SIGMOID = 4
 
     @staticmethod
     def argparse(s):
@@ -162,6 +163,10 @@ def squaredcos_cap_v2(timesteps: int) -> np.ndarray:
     gammas = np.exp(np.cumsum(log_alphas))
     return gammas
 
+def schedule_sigmoid(timesteps: int, beta_start: float, beta_end: float) -> np.ndarray:
+    """https://arxiv.org/pdf/2301.10972"""
+    betas = np.linspace((-6,6), timesteps)
+    return (1/(np.exp(betas) + 1)) * (beta_end - beta_start) + beta_start
 
 ##########################################################################################
 #                              Sampler Class                                             #
