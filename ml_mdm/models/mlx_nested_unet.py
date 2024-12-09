@@ -11,6 +11,7 @@ import mlx.nn as nn
 import torch.distributed as dist  # Need to change these
 
 from ml_mdm import config, s3_helpers
+from ml_mdm.models.nested_unet import download
 from ml_mdm.models.unet import UNet, UNetConfig, zero_module
 
 
@@ -75,24 +76,6 @@ class Nested4UNetConfig(Nested3UNetConfig):
             nesting=True, initialize_inner_with_pretrained=None
         )
     )
-
-
-def download(vision_model_path):
-    import os
-
-    from distributed import get_local_rank
-
-    local_file = vision_model_path.replace("/", "_")
-    if get_local_rank() == 0 and (not os.path.exists(local_file)):
-        try:
-            s3_helpers.download_object_from_full_path(
-                vision_model_path, download_path=local_file
-            )
-        except Exception:
-            pass
-    if dist.is_initialized():
-        dist.barrier()
-    return local_file
 
 
 @config.register_model("nested_unet")
