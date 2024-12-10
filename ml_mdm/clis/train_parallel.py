@@ -7,6 +7,7 @@ TORCH_DISTRIBUTED_DEBUG=DETAIL torchrun --nproc_per_node=2 train_parallel.py
 import logging
 import os
 import time
+from contextlib import nullcontext
 
 import numpy as np
 import torch
@@ -53,7 +54,11 @@ def main(args):
     local_rank, global_rank, world_size = init_distributed_singlenode(timeout=36000)
 
     input_channels = 3
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
     tokenizer, language_model = factory.create_lm(args, device=device)
     language_model_dim = language_model.embed_dim
 
@@ -71,7 +76,8 @@ def main(args):
             os.makedirs(args.output_dir)
 
     if "MASTER_ADDR" in os.environ:
-        dist.barrier()
+        if dist.is_available() and dist.is_initialized():
+            dist.barrier()
 
     other_items = None
     if (
@@ -109,7 +115,8 @@ def main(args):
     else:
         grad_scaler = None
 
-    dist.barrier()
+    if dist.is_available() and dist.is_initialized():
+        dist.barrier()
     max_lr = args.lr
     # Should eps be 1e-4 like for LMs in fp16 ?
     if args.use_adamw:
@@ -137,13 +144,18 @@ def main(args):
     CLIP = 3
 
     # intialize the model
-    model = nn.parallel.DistributedDataParallel(
-        diffusion_model.model,
-        device_ids=[local_rank],
-    )
+    if int(os.environ.get("WORLD_SIZE", "1")) > 1:
+        model = nn.parallel.DistributedDataParallel(
+            diffusion_model.model,
+            device_ids=[local_rank],
+        )
+    else:
+        model = diffusion_model.model
     diffusion_model.model = model
-    dist.barrier()
-    ema_model = ModelEma(diffusion_model.model.module.vision_model)
+    if dist.is_available() and dist.is_initialized():
+        dist.barrier()
+    # Check if the model is wrapped in DistributedDataParallel
+    ema_model = ModelEma(getattr(diffusion_model.model, "module", diffusion_model.model).vision_model)
 
     # get the dataloader
     if args.multinode:
@@ -187,7 +199,8 @@ def main(args):
             sample["images"] = images
 
         if accumulate_gradient:
-            with diffusion_model.model.no_sync():
+            no_sync_context = diffusion_model.model.no_sync() if hasattr(diffusion_model.model, "no_sync") else nullcontext()
+            with no_sync_context:
                 loss_val, losses, times, x_t, means, targets = trainer.train_batch(
                     diffusion_model,
                     sample,
@@ -220,7 +233,6 @@ def main(args):
         num_time_counts += 1
         if np.isnan(loss_val):
             continue
-
         # accumulate loss
         if batch_num != 1:
             # E[(x-E[x])^2] = E[x^2] - E[x]^2
@@ -239,6 +251,8 @@ def main(args):
             exp_avg_loss = loss_val
             exp_avg_loss_var = loss_val**2
         total_loss_val += loss_val
+        # print(f"Allocated memory: {torch.mps.current_allocated_memory() / 1024**3:.2f} GB", end='')
+        # print(f"Val loss: {loss_val}")
 
         if (not accumulate_gradient) and (global_rank == 0):
             metrics = {
@@ -274,12 +288,15 @@ def main(args):
                     "args": args,
                 }  # save full config.
                 ema_model.save(vision_model_file, other_items=other_items)
-                diffusion_model.model.module.vision_model.save(
+                getattr(diffusion_model.model, "module", diffusion_model.model).vision_model.save(
                     vision_model_noema_file, other_items=other_items
                 )
+                torch.cuda.empty_cache()
+                torch.mps.empty_cache()
 
         if (batch_num % args.save_freq == 0) or (batch_num == args.num_training_steps):
-            dist.barrier()
+            if dist.is_available() and dist.is_initialized():
+                dist.barrier()
 
         if batch_num == args.num_training_steps:
             break
@@ -302,5 +319,6 @@ if __name__ == "__main__":
     np.random.seed(seed)
     torch.random.manual_seed(seed)
     torch.cuda.empty_cache()
+    torch.mps.empty_cache()
     helpers.print_args(args)
     main(args)

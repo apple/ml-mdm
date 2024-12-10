@@ -5,11 +5,11 @@ import re
 from mlx.data.core import CharTrie
 
 
-def read_dictionary_bert(token_file):
+def read_dictionary_bert(vocab_file):
     trie_key_scores = []
     trie = CharTrie()
 
-    f = open(token_file, "rb")
+    f = open(vocab_file, "rb")
     sep = "\u2581".encode()
 
     max_score = 0
@@ -42,11 +42,11 @@ def read_dictionary_bert(token_file):
     return trie, trie_key_scores, eos, bos, pad
 
 
-def read_dictionary_t5(token_file):
+def read_dictionary_t5(vocab_file):
     trie_key_scores = []
     trie = CharTrie()
 
-    f = open(token_file, "rb")
+    f = open(vocab_file, "rb")
     sep = "\u2581".encode()
 
     max_score = 0
@@ -75,7 +75,7 @@ def read_dictionary_t5(token_file):
     return trie, trie_key_scores, eos, bos, pad
 
 
-def read_dictionary(token_file):
+def read_dictionary(vocab_file):
     trie_key_scores = []
     trie = CharTrie()
 
@@ -85,7 +85,7 @@ def read_dictionary(token_file):
         trie.insert(token)
         trie_key_scores.append(0.0)
 
-    f = open(token_file, "rb")
+    f = open(vocab_file, "rb")
     sep = "\u2581".encode()
 
     max_score = 0
@@ -130,7 +130,7 @@ def read_dictionary(token_file):
 
 
 class Tokenizer:
-    def __init__(self, token_file, mode=None):
+    def __init__(self, vocab_file, mode=None):
         if mode == "t5":
             (
                 self._trie,
@@ -138,7 +138,7 @@ class Tokenizer:
                 self.eos,
                 self.bos,
                 self.pad,
-            ) = read_dictionary_t5(token_file)
+            ) = read_dictionary_t5(vocab_file)
         elif mode == "bert":
             (
                 self._trie,
@@ -146,7 +146,7 @@ class Tokenizer:
                 self.eos,
                 self.bos,
                 self.pad,
-            ) = read_dictionary_bert(token_file)
+            ) = read_dictionary_bert(vocab_file)
         else:
             (
                 self._trie,
@@ -154,7 +154,7 @@ class Tokenizer:
                 self.eos,
                 self.bos,
                 self.pad,
-            ) = read_dictionary(token_file)
+            ) = read_dictionary(vocab_file)
         self.vocab_size = self._trie.num_keys()
 
     @property

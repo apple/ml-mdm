@@ -64,8 +64,9 @@ Developers should set up `pre-commit` as well with `pre-commit install`.
 ### Running Test Cases
 
 ```
-> pytest   # will run all test cases - including ones that require a gpu
-> pytest  -m "not gpu"  # run test cases that can work with just cpu
+> pytest   # run test cases that can work with just cpu
+> pytest  -m ''  # will run all test cases - including ones that require a gpu
+> pytest -m gpu # run only gpu test cases
 ```
 
 
@@ -99,6 +100,30 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 
 ## Codebase
 
+
+### 1. /configs
+
+| module | description |
+| - | - |
+| `configs.dataset_creation` | Configuration file for dataset splitting into train-eval-val pipeline |
+| `configs.datasets` | Datasets for training and evaluation phases of the model |
+| `configs.models` | Configuration files for different resolution models |
+
+
+### 2. /data
+
+| module | description |
+| - | - |
+| `data` | <ul><li><b>bert.vocab:</b> BERT-trained dictionary containing tokens and their associated vector representations</li><li><b>c4_wpm.vocab:</b> C4-trained dictionary containing tokens and their associated vector representations</li><li><b>cifar10.vocab:</b> CIFAR10-trained dictionary containing tokens and their associated vector representations</li><li><b>imagenet.vocab:</b> Prompts associated with Imagenet dataset</li><li><b>prompts_cc12m-64x64.tsv:</b> Prompts associated with cc12m dataset for the 64x64 res. model</li><li><b>prompts_cc12m-256x256.tsv:</b> Prompts associated with cc12m dataset for the 256x256 res. model</li><li><b>prompts_cifar10-32x32.tsv:</b> Prompts associated with cifar10 dataset for the 32x32 res. model </li><li><b>prompts_cifar10-64x64.tsv:</b> Prompts associated with cifar10 dataset for the 64x64 res. model </li><li><b>prompts_demo.tsv:</b> Extra demo prompts </li><li><b>prompts_imagenet-64px.tsv:</b> Prompts associated with imagenet dataset for the 64x64 res. model </li><li><b>prompts_WebImage-ALIGN-64px.tsv:</b> Prompts associated with WebImage-ALIGN dataset for the 64x64 res. model </li><li><b>t5.vocab:</b> t5-trained dictionary containing tokens and their associated vector representations </li><li><b>tokenizer_spm_32000_50m.vocab:</b> SPM-trained dictionary containing tokens and their associated vector representations </li></ul> |
+
+### 3. /docs
+
+| module | description |
+| - | - |
+| `docs` | <ul><li><b>web_demo.png:</b> Screenshot of the web demo of the model</li></ul> |
+
+### 4. /ml_mdm 
+
 | module | description |
 | - | - |
 | `ml_mdm.models` | The core model implementations |
@@ -107,7 +132,11 @@ torchrun --standalone --nproc_per_node=1  ml_mdm/clis/generate_sample.py --port 
 | `ml_mdm.clis` | All command line tools in the project, the most relevant being `train_parallel.py` |
 | `tests/` | Unit tests and sample training files |
 
+### 5. /tests
 
+| module | description |
+| - | - |
+| `tests.test_files` | Sample files for testing |
 
 # Concepts
 
@@ -124,6 +153,22 @@ In the `ml_mdm.models` submodule, we've open sourced our implementations of:
 
 > In essence, `simple_parsing` will convert all passed cli arguments and yaml files into clean configuration classes like `ml_mdm.reader.ReaderConfig`, `ml_mdm.diffusion.DiffusionConfig`.
 
+
+`ml_mdm.config` stores a global mapping of names to classes in `MODEL_REGISTRY`, `MODEL_CONFIG_REGISTRY`, `PIPELINE_REGISTRY`, and `PIPELINE_CONFIG_REGISTRY`.
+
+`MODEL_REGISTRY` and `PIPELINE_REGISTRY` store information as shown in the following example:
+
+> *_CONFIG_REGISTRY[architecture name]["model"] = model name
+
+> *_CONFIG_REGISTRY[architecture name]["config"] = configuration class
+
+MODEL_CONFIG_REGISTRY and PIPELINE_CONFIG_REGISTRY store information as shown in the following example: 
+> *_CONFIG_REGISTRY[architecture name]["model"] = model name
+
+> *_CONFIG_REGISTRY[architecture name]["config"] = configuration class
+
+
+architecture name and model name are passed into ml_mdm.config through the function parameter *names. where *names points to "architecture name", "model name"
 
 
 
@@ -263,11 +308,11 @@ reader_config:
 Then you can use our dataset download helper:
 ```console
 python -m ml_mdm.clis.download_tar_from_index \
-  --dataset-config-file configs/datasets/cc12m.yaml \
+  --dataset_config_file configs/datasets/cc12m.yaml \
   --subset train --download_tar
 
 python -m ml_mdm.clis.download_tar_from_index \
-  --dataset-config-file configs/datasets/cc12m.yaml \
+  --dataset_config_file configs/datasets/cc12m.yaml \
   --subset eval --download_tar
 ```
 
