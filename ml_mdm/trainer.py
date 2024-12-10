@@ -1,11 +1,14 @@
 # For licensing see accompanying LICENSE file.
 # Copyright (C) 2024 Apple Inc. All rights reserved.
+
+
 from argparse import Namespace
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.utils.tensorboard import SummaryWriter
 
 
 def train_batch(
