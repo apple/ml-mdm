@@ -226,7 +226,6 @@ class Sampler(nn.Module):
         self.register_buffer("vdm_loss_weights", weights)
 
     def get_eps_time(self, images, time=None):
-        breakpoint()  # Breakpoint 1
         batch_size = images.shape[0]
         if time is None:
             time = torch.randint(0, self.n_steps, (batch_size,), device=images.device)
@@ -235,22 +234,17 @@ class Sampler(nn.Module):
         g, g_last = self.read_gamma(time + 1, images), self.read_gamma(time, images)
         weights = self.vdm_loss_weights[time + 1]
         eps = torch.randn_like(images)
-        breakpoint()  # Breakpoint 2
         return eps, g, g_last, weights, time
 
     def get_xt(self, images, eps, g):
-        breakpoint()  # Breakpoint 3
         x_t = g.sqrt() * images + (1 - g).sqrt() * eps
-        breakpoint()  # Breakpoint 4
         return x_t
 
     def get_image_rescaled(self, images, scale_factor=None):
-        breakpoint()  # Breakpoint 5
         if scale_factor is None:
             scale_factor = self._config.rescale_signal
         if scale_factor:  # divide the signal
             images = images / scale_factor
-            breakpoint()  # Breakpoint 6
         return images
 
     def get_schedule_shifted(
@@ -265,7 +259,6 @@ class Sampler(nn.Module):
         return gammas
 
     def get_prediction_targets(self, images, eps, g, g_last, prediction_type=None):
-        breakpoint()  # Breakpoint 7
         if prediction_type is None:
             prediction_type = self._config.loss_target_type
 
@@ -278,7 +271,6 @@ class Sampler(nn.Module):
             pred = g.sqrt() * eps - (1 - g).sqrt() * images
         else:
             raise Exception("Unsupported type")
-        breakpoint()  # Breakpoint 8
         return pred
 
     def get_prediction_xt_last(
@@ -375,11 +367,9 @@ class Sampler(nn.Module):
         if not return_eps:
             return x0
         eps = (x_t - x0 * g.sqrt()) / (1 - g).sqrt()
-        breakpoint()  # Breakpoint 12
         return x0, eps
 
     def get_pred_from_x0_xt(self, x_t, x0, g, prediction_type=None):
-        breakpoint()  # Breakpoint 13
         batch_size = x_t.size(0)
         if prediction_type is None:
             prediction_type = self._config.prediction_type
@@ -392,12 +382,11 @@ class Sampler(nn.Module):
             pred = (g.sqrt() * x_t - x0) / (1 - g).sqrt()
         else:
             raise Exception("prediction type not set to a correct value")
-        breakpoint()  # Breakpoint 14
         return pred
 
     def get_xt_minus_1(
         self,
-        model,  # Ethan-This is ml_mdm.diffusion.Model but to import diffusion it is a circular import
+        model,  # Ethan-This is ml_mdm.diffusion.Model but importing diffusion is a circular import
         time_step: torch.Tensor,
         x_t: torch.Tensor,
         lm_outputs: torch.Tensor,
@@ -513,14 +502,10 @@ class Sampler(nn.Module):
             return self._threshold_sample(pred_x0 * s, 0.95, 1.5) / s
         return pred_x0
 
-    def sample(
-        self, *args, **kwargs
-    ):  # Ethan - Not sure how to print type of these and not sure about generator class
-        # breakpoint()
+    def sample(self, *args, **kwargs):
         if not kwargs.get("yield_output", False):
             output = self._sample(*args, **kwargs)
             return next(output)
-        # breakpoint()
         return self._sample(*args, **kwargs)
 
     def _sample(
@@ -583,10 +568,8 @@ class Sampler(nn.Module):
 
         if return_sequence:
             seq[-1] = torch.clip(seq[-1], -1, 1)
-            breakpoint()
             yield seq
         else:
-            breakpoint()
             yield self._postprocess(x_t, x0, extra, clip=True, **post_args)
 
     def _postprocess(
@@ -596,7 +579,7 @@ class Sampler(nn.Module):
         extra: tuple = None,
         yield_full: bool = False,
         clip: bool = False,
-        image_scale=None,  # Ethan-Ask about NoneTypes where None is default
+        image_scale=None,  # Ethan-NoneType
         **unused,
     ):
         if image_scale is None:
@@ -608,7 +591,6 @@ class Sampler(nn.Module):
             x_t = torch.clip(x_t, -1, 1)
         if yield_full:
             return (x0, x_t, extra)
-        breakpoint()
         return x_t
 
     def set_timesteps(self, num_inference_steps: int = 250) -> np.ndarray:
@@ -624,7 +606,6 @@ class Sampler(nn.Module):
 
 class NestedSampler(Sampler):
     def get_gammas(self, gamma, scales, images=None):
-        breakpoint()
         if not self._config.schedule_shifted:
             gammas = [gamma for _ in scales]
         else:
@@ -634,11 +615,9 @@ class NestedSampler(Sampler):
                 F.interpolate(g, im.size(-1), mode="nearest")
                 for g, im in zip(gammas, images)
             ]
-            breakpoint()
         return gammas
 
     def get_xt(self, x0, eps, g, scales):
-        breakpoint()
         x_t = []
         for x, s, e, gi in zip(x0, scales, eps, g):
             x_t += [
@@ -650,11 +629,9 @@ class NestedSampler(Sampler):
                     gi,
                 )
             ]
-        breakpoint()
         return x_t
 
     def get_prediction_targets(self, x0, eps, g, g_last, scales, prediction_type=None):
-        breakpoint()
         tgt = []
         for x, s, e, gi, gil in zip(x0, scales, eps, g, g_last):
             tgt += [
@@ -668,7 +645,6 @@ class NestedSampler(Sampler):
                     prediction_type,
                 )
             ]
-        breakpoint()
         return tgt
 
     def get_xt_minus_1(
@@ -684,7 +660,6 @@ class NestedSampler(Sampler):
         ddim_eta=None,
         return_details=False,
     ):
-        breakpoint()
         scales = model.vision_model.nest_ratio + [1]
         if isinstance(x_t, torch.Tensor):
             out = [x_t]
@@ -742,7 +717,6 @@ class NestedSampler(Sampler):
         output_inner=False,
         **unused,
     ):
-        breakpoint()
         scales = [
             x_t[i].size(-1) / x_t[-1].size(-1)
             if not self._config.schedule_shifted
@@ -763,7 +737,6 @@ class NestedSampler(Sampler):
             # nx = x.new_ones(x.size(0), 3, size, size)
             # nx[..., :x.size(-2), :x.size(-1)] = x
             nx = F.interpolate(x, size, mode="bilinear")
-            breakpoint()
             return nx
 
         # output inner loop results.
@@ -791,18 +764,13 @@ class NestedSampler(Sampler):
                 x0 = torch.cat([cat(xi, size=x0[0].size(-1)) for xi in x0[::-1]], -1)
                 xt = torch.cat([cat(xi, size=xt[0].size(-1)) for xi in xt[::-1]], -1)
                 out = (x0, xt, extra[-1])
-        breakpoint()
         return out
 
     def forward_model(
         self, model, x_t, t, lm_outputs, lm_mask, micros={}, guidance_scale=1
     ):
-        breakpoint()
-
         def cfg(pred):
-            breakpoint()
             pred_uncond, pred = pred.chunk(2)
-            breakpoint()
             return pred_uncond + guidance_scale * (pred - pred_uncond)
 
         if guidance_scale != 1:
@@ -817,5 +785,4 @@ class NestedSampler(Sampler):
             p_t = [cfg(p) for p in p_t]
         else:
             p_t = model(x_t, t, lm_outputs, lm_mask, micros)
-        breakpoint()
         return p_t
