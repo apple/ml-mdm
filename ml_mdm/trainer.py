@@ -1,10 +1,14 @@
 # For licensing see accompanying LICENSE file.
 # Copyright (C) 2024 Apple Inc. All rights reserved.
+
+
+from argparse import Namespace
+from typing import Optional
+
 import numpy as np
 import torch
 import torch.nn as nn
-from typing import Optional, Tuple 
-from argparse import Namespace
+from torch.utils.tensorboard import SummaryWriter
 
 def train_batch(
     model: torch.nn.Module,
@@ -15,7 +19,7 @@ def train_batch(
     args: Namespace,
     grad_scaler: Optional[torch.cuda.amp.GradScaler] = None,
     accumulate_gradient: bool = False,
-    num_grad_accumulations: int =1,
+    num_grad_accumulations: int = 1,
     ema_model: Optional[nn.Module] = None,
     loss_factor: float = 1.0,
 ):
@@ -51,7 +55,9 @@ def train_batch(
             grad_scaler.step(optimizer)
             grad_scaler.update()
             if ema_model is not None:
-                ema_model.update(getattr(model.model, "module", model.model).vision_model)
+                ema_model.update(
+                    getattr(model.model, "module", model.model).vision_model
+                )
     else:
         losses, times, x_t, means, targets, weights = model.get_loss(sample)
         if weights is None:
@@ -75,7 +81,9 @@ def train_batch(
             ).item()
             optimizer.step()
             if ema_model is not None:
-                ema_model.update(getattr(model.model, "module", model.model).vision_model)
+                ema_model.update(
+                    getattr(model.model, "module", model.model).vision_model
+                )
 
     if logger is not None and not accumulate_gradient:
         logger.add_scalar("train/Loss", loss_val)
