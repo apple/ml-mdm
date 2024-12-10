@@ -1,12 +1,11 @@
 # For licensing see accompanying LICENSE file.
 # Copyright (C) 2024 Apple Inc. All rights reserved.
 from argparse import Namespace
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.tensorboard import SummaryWriter
 
 
 def train_batch(
@@ -22,7 +21,6 @@ def train_batch(
     ema_model: Optional[nn.Module] = None,
     loss_factor: float = 1.0,
 ):
-    breakpoint()
     model.train()
     lr = scheduler.get_last_lr()[0]
     # Updates the scale for next iteration
