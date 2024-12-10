@@ -8,7 +8,6 @@ from typing import List
 
 import mlx.core as mx
 import mlx.nn as nn
-import torch.distributed as dist  # Need to change these
 
 from ml_mdm import config, s3_helpers
 from ml_mdm.models.nested_unet import download
