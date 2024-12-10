@@ -28,6 +28,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+cpu = [ 
+    "torch==2.2.2+cpu", 
+    "tensorflow==2.5.0", 
+] 
+gpu = [ 
+    "torch==2.2.2+cu111", 
+    "tensorflow-gpu==2.5.0", 
+]
 data_prep = [
     "img2dataset",
     "boto3",
