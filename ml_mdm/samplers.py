@@ -4,14 +4,18 @@ import logging
 import math
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Tuple
 
 from einops import repeat
+from reader import method
 from tqdm import tqdm
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+import ml_mdm.diffusion
 
 
 class Type(Enum):
@@ -187,12 +191,14 @@ class Sampler(nn.Module):
         if self._config.loss_target_type is None:
             self._config.loss_target_type = self._config.prediction_type
 
-    def read_gamma(self, time, image):
+    def read_gamma(self, time: torch.Tensor, image: torch.Tensor) -> torch.Tensor:
         B, C, H, W = image.size()
         time = repeat(time, "b -> b c h w", c=C, h=H, w=W)
         return self.gammas[time]
 
-    def get_noise_schedule(self, schedule_type, n_steps, sampler_config):
+    def get_noise_schedule(
+        self, schedule_type: ScheduleType, n_steps: int, sampler_config: SamplerConfig
+    ):
         # pre-defined noise schedule functions
         if schedule_type == ScheduleType.COSINE:
             _gammas = schedule_cosine(n_steps)
@@ -223,6 +229,7 @@ class Sampler(nn.Module):
         self.register_buffer("vdm_loss_weights", weights)
 
     def get_eps_time(self, images, time=None):
+        breakpoint()  # Breakpoint 1
         batch_size = images.shape[0]
         if time is None:
             time = torch.randint(0, self.n_steps, (batch_size,), device=images.device)
@@ -231,20 +238,27 @@ class Sampler(nn.Module):
         g, g_last = self.read_gamma(time + 1, images), self.read_gamma(time, images)
         weights = self.vdm_loss_weights[time + 1]
         eps = torch.randn_like(images)
+        breakpoint()  # Breakpoint 2
         return eps, g, g_last, weights, time
 
     def get_xt(self, images, eps, g):
+        breakpoint()  # Breakpoint 3
         x_t = g.sqrt() * images + (1 - g).sqrt() * eps
+        breakpoint()  # Breakpoint 4
         return x_t
 
     def get_image_rescaled(self, images, scale_factor=None):
+        breakpoint()  # Breakpoint 5
         if scale_factor is None:
             scale_factor = self._config.rescale_signal
         if scale_factor:  # divide the signal
             images = images / scale_factor
+            breakpoint()  # Breakpoint 6
         return images
 
-    def get_schedule_shifted(self, gammas, scale_factor=None):
+    def get_schedule_shifted(
+        self, gammas: torch.Tensor, scale_factor: float = None
+    ) -> torch.Tensor:
         if (scale_factor is not None) and (scale_factor > 1):  # rescale noise schecule
             p = self._config.schedule_shifted_power
             scale_factor = scale_factor**p
@@ -254,6 +268,7 @@ class Sampler(nn.Module):
         return gammas
 
     def get_prediction_targets(self, images, eps, g, g_last, prediction_type=None):
+        breakpoint()  # Breakpoint 7
         if prediction_type is None:
             prediction_type = self._config.loss_target_type
 
@@ -266,21 +281,22 @@ class Sampler(nn.Module):
             pred = g.sqrt() * eps - (1 - g).sqrt() * images
         else:
             raise Exception("Unsupported type")
+        breakpoint()  # Breakpoint 8
         return pred
 
     def get_prediction_xt_last(
         self,
-        x_t,
-        pred,
-        g,
-        g_last,
-        prediction_type=None,
-        clip_fn=None,
-        need_noise=False,
-        ddim_eta=None,
+        x_t: torch.Tensor,
+        pred: torch.Tensor,
+        g: torch.Tensor,
+        g_last: torch.Tensor,
+        prediction_type: PredictionType = None,
+        clip_fn: method = None,
+        need_noise: torch.Tensor = False,
+        ddim_eta: int = None,
         input_noise=None,
         image_scale=None,
-    ):
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         x_t:             noisy image
         pred:            model prediction (can be x0, eps, v, etc)
@@ -291,7 +307,6 @@ class Sampler(nn.Module):
         need_noise:      use noise or not
         ddim_eta:        if None, then not using DDIM, otherwise, use DDIM implementation (1==DDPM)
         """
-
         if prediction_type is None:
             prediction_type = self._config.prediction_type
 
@@ -336,8 +351,15 @@ class Sampler(nn.Module):
         return x0, x_t_last, eps
 
     def get_x0_eps_from_pred(
-        self, x_t, pred, g, prediction_type=None, clip_fn=None, return_eps=True
+        self,
+        x_t: torch.Tensor,
+        pred: torch.Tensor,
+        g: torch.Tensor,
+        prediction_typ: PredictionType = None,
+        clip_fn=None,
+        return_eps: bool = True,
     ):
+        breakpoint()  # Breakpoint 11
         batch_size = x_t.size(0)
         if prediction_type is None:
             prediction_type = self._config.prediction_type
@@ -357,9 +379,11 @@ class Sampler(nn.Module):
         if not return_eps:
             return x0
         eps = (x_t - x0 * g.sqrt()) / (1 - g).sqrt()
+        breakpoint()  # Breakpoint 12
         return x0, eps
 
     def get_pred_from_x0_xt(self, x_t, x0, g, prediction_type=None):
+        breakpoint()  # Breakpoint 13
         batch_size = x_t.size(0)
         if prediction_type is None:
             prediction_type = self._config.prediction_type
@@ -372,20 +396,21 @@ class Sampler(nn.Module):
             pred = (g.sqrt() * x_t - x0) / (1 - g).sqrt()
         else:
             raise Exception("prediction type not set to a correct value")
+        breakpoint()  # Breakpoint 14
         return pred
 
     def get_xt_minus_1(
         self,
-        model,
-        time_step,
-        x_t,
-        lm_outputs,
-        lm_mask,
-        micros={},
-        time_step_last=None,
-        guidance_scale=1,
-        ddim_eta=None,
-        return_details=False,
+        model: ml_mdm.diffusion.Model,
+        time_step: torch.Tensor,
+        x_t: torch.Tensor,
+        lm_outputs: torch.Tensor,
+        lm_mask: torch.Tensor,
+        micros: dict = {},
+        time_step_last: torch.Tensor = None,
+        guidance_scale: float = 1,
+        ddim_eta: int = None,
+        return_details: bool = False,
     ):
         batch_size = x_t.shape[0]
         ones = torch.ones(batch_size, dtype=torch.long, device=self.gammas.device)
@@ -418,8 +443,15 @@ class Sampler(nn.Module):
             return x_s
 
     def forward_model(
-        self, model, x_t, t, lm_outputs, lm_mask, micros={}, guidance_scale=1
-    ):
+        self,
+        model: ml_mdm.diffusion.Model,
+        x_t: torch.Tensor,
+        t: torch.Tensor,
+        lm_outputs: torch.Tensor,
+        lm_mask: torch.Tensor,
+        micros: dict = {},
+        guidance_scale: float = 1,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         if guidance_scale != 1:
             assert x_t.shape[0] * 2 == lm_outputs.shape[0]
             pred, extras = model(
@@ -437,8 +469,11 @@ class Sampler(nn.Module):
         return pred, extras
 
     def _threshold_sample(
-        self, sample, dynamic_thresholding_ratio=0.995, sample_max_value=100
-    ):
+        self,
+        sample: torch.Tensor,
+        dynamic_thresholding_ratio: float = 0.995,
+        sample_max_value: float = 100,
+    ) -> torch.Tensor:
         """
         "Dynamic thresholding: At each sampling step we set s to a certain percentile absolute pixel value in xt0 (the
         prediction of x_0 at timestep t), and if s > 1, then we threshold xt0 to the range [-s, s] and then divide by
