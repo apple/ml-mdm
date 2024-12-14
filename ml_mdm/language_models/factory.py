@@ -42,7 +42,7 @@ class T5Encoder(T5ForConditionalGeneration):
 
 
 class LanguageModel(nn.Module):
-    def __init__(self, args, model, device="cpu"):
+    def __init__(self, args, model, device: torch.device = "cpu"):
         super().__init__()
         self.model = model
         self.embed_dim = model.embed_dim
@@ -148,6 +148,6 @@ def create_lm(args, device: torch.device = "cuda"):
                 device_map="cpu",
                 torch_dtype=torch.float16
             )
-            model = LanguageModel(args, model, device="cpu")
+            model = LanguageModel(args, model, device = "cpu")
     model.eval()
     return tokenizer, model
