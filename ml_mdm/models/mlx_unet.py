@@ -468,7 +468,7 @@ class ResNetBlock(nn.Module):
         for i in range(num_residual_blocks):
             cur_config = resnet_configs[i]
             resnets.append(ResNet(temporal_dim, cur_config))
-        self.resnets = nn.quantize(resnets)
+        self.resnets = nn.Module.modules(resnets)
 
         if self.num_attention_layers > 0:
             attn = []
@@ -481,7 +481,7 @@ class ResNetBlock(nn.Module):
                             use_attention_ffn=resnet_configs[i].use_attention_ffn,
                         )
                     )
-            self.attn = nn.quantize(attn)
+            self.attn = nn.Module.modules(attn)
 
         if (
             self.num_temporal_attention_layers
@@ -499,7 +499,7 @@ class ResNetBlock(nn.Module):
                             pos_emb=temporal_pos_emb,
                         )
                     )
-            self.t_attn = nn.quantize(t_attn)
+            self.t_attn = nn.Module.modules(t_attn)
 
         conv_layer = (
             nn.Conv2d if (not self.temporal) or self.temporal_spatial_ds else nn.Conv1d
@@ -618,7 +618,7 @@ class UNet(nn.Module):
                         mlx_zero_module(nn.Linear(self.temporal_dim, self.temporal_dim)),
                     ]
                 )
-            self.cond_layers = nn.quantize(cond_layers)
+            self.cond_layers = nn.Module.modules(cond_layers)
 
         channels = config.resolution_channels[0]
         self.conv_in = nn.Conv2d(
@@ -743,10 +743,10 @@ class UNet(nn.Module):
             nn.Conv2d(channels, output_channels, kernel_size=3, padding=1)
         )
         self._config = config
-        self.down_blocks = nn.quantize(self.down_blocks)
+        self.down_blocks = nn.Module.modules(self.down_blocks)
         if not config.skip_mid_blocks:
-            self.mid_blocks = nn.quantize(self.mid_blocks)
-        self.up_blocks = nn.quantize(self.up_blocks)
+            self.mid_blocks = nn.Module.modules(self.mid_blocks)
+        self.up_blocks = nn.Module.modules(self.up_blocks)
 
         self.masked_cross_attention = config.masked_cross_attention
         if config.conditioning_feature_dim > 0 and (not config.skip_cond_emb):
@@ -755,7 +755,7 @@ class UNet(nn.Module):
                 self.lm_proj = nn.Linear(
                     self.input_conditioning_feature_dim, config.conditioning_feature_dim
                 )
-            self.lm_head = nn.quantize(
+            self.lm_head = nn.Module.modules(
                 [
                     SelfAttention1DBlock(config.conditioning_feature_dim)
                     for _ in range(config.num_lm_head_layers)
