@@ -10,7 +10,6 @@ import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 
-
 def train_batch(
     model: torch.nn.Module,
     sample: dict,
