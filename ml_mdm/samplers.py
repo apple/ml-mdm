@@ -4,7 +4,7 @@ import logging
 import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Tuple
+from typing import Callable, Tuple
 
 from einops import repeat
 from tqdm import tqdm
@@ -280,7 +280,7 @@ class Sampler(nn.Module):
         g: torch.Tensor,
         g_last: torch.Tensor,
         prediction_type: PredictionType = None,
-        clip_fn=None,  # Said type class 'method' but could not find what that was
+        clip_fn: Callable = None,
         need_noise: torch.Tensor = False,
         ddim_eta: int = None,
         input_noise=None,
@@ -386,7 +386,7 @@ class Sampler(nn.Module):
 
     def get_xt_minus_1(
         self,
-        model,  # Ethan-This is ml_mdm.diffusion.Model but importing diffusion is a circular import
+        model,  # TODO - This is ml_mdm.diffusion.Model but importing diffusion is a circular import
         time_step: torch.Tensor,
         x_t: torch.Tensor,
         lm_outputs: torch.Tensor,
@@ -429,7 +429,7 @@ class Sampler(nn.Module):
 
     def forward_model(
         self,
-        model,  # Ethan-This is ml_mdm.diffusion.Model but to import diffusion it is a circular import
+        model,  # TODO - This is ml_mdm.diffusion.Model but to import diffusion it is a circular import
         x_t: torch.Tensor,
         t: torch.Tensor,
         lm_outputs: torch.Tensor,
@@ -510,7 +510,7 @@ class Sampler(nn.Module):
 
     def _sample(
         self,
-        model,  # Ethan-This is ml_mdm.diffusion.Model but to import diffusion it is a circular import
+        model,  # TODO - This is ml_mdm.diffusion.Model but to import diffusion it is a circular import
         x_t: torch.Tensor,
         lm_outputs: torch.Tensor,
         lm_mask: torch.Tensor,
@@ -525,7 +525,7 @@ class Sampler(nn.Module):
         disable_bar: bool = True,
         yield_output: bool = False,
         **post_args,
-    ):  # Ethan - Generator and **post_args
+    ):
         """
         Starting with x_t, at time step t, perform diffusion to first step.
         """
@@ -579,7 +579,7 @@ class Sampler(nn.Module):
         extra: tuple = None,
         yield_full: bool = False,
         clip: bool = False,
-        image_scale=None,  # Ethan-NoneType
+        image_scale: float = None,
         **unused,
     ):
         if image_scale is None:
