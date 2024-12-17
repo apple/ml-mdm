@@ -4,6 +4,7 @@ import logging
 import math
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Callable, Tuple
 
 from einops import repeat
 from tqdm import tqdm
@@ -192,12 +193,14 @@ class Sampler(nn.Module):
         if self._config.loss_target_type is None:
             self._config.loss_target_type = self._config.prediction_type
 
-    def read_gamma(self, time, image):
+    def read_gamma(self, time: torch.Tensor, image: torch.Tensor) -> torch.Tensor:
         B, C, H, W = image.size()
         time = repeat(time, "b -> b c h w", c=C, h=H, w=W)
         return self.gammas[time]
 
-    def get_noise_schedule(self, schedule_type, n_steps, sampler_config):
+    def get_noise_schedule(
+        self, schedule_type: ScheduleType, n_steps: int, sampler_config: SamplerConfig
+    ):
         # pre-defined noise schedule functions
         if schedule_type == ScheduleType.COSINE:
             _gammas = schedule_cosine(n_steps)
@@ -249,7 +252,9 @@ class Sampler(nn.Module):
             images = images / scale_factor
         return images
 
-    def get_schedule_shifted(self, gammas, scale_factor=None):
+    def get_schedule_shifted(
+        self, gammas: torch.Tensor, scale_factor: float = None
+    ) -> torch.Tensor:
         if (scale_factor is not None) and (scale_factor > 1):  # rescale noise schecule
             p = self._config.schedule_shifted_power
             scale_factor = scale_factor**p
@@ -275,17 +280,17 @@ class Sampler(nn.Module):
 
     def get_prediction_xt_last(
         self,
-        x_t,
-        pred,
-        g,
-        g_last,
-        prediction_type=None,
-        clip_fn=None,
-        need_noise=False,
-        ddim_eta=None,
+        x_t: torch.Tensor,
+        pred: torch.Tensor,
+        g: torch.Tensor,
+        g_last: torch.Tensor,
+        prediction_type: PredictionType = None,
+        clip_fn: Callable = None,
+        need_noise: torch.Tensor = False,
+        ddim_eta: int = None,
         input_noise=None,
         image_scale=None,
-    ):
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         x_t:             noisy image
         pred:            model prediction (can be x0, eps, v, etc)
@@ -296,7 +301,6 @@ class Sampler(nn.Module):
         need_noise:      use noise or not
         ddim_eta:        if None, then not using DDIM, otherwise, use DDIM implementation (1==DDPM)
         """
-
         if prediction_type is None:
             prediction_type = self._config.prediction_type
 
@@ -341,7 +345,13 @@ class Sampler(nn.Module):
         return x0, x_t_last, eps
 
     def get_x0_eps_from_pred(
-        self, x_t, pred, g, prediction_type=None, clip_fn=None, return_eps=True
+        self,
+        x_t: torch.Tensor,
+        pred: torch.Tensor,
+        g: torch.Tensor,
+        prediction_type: PredictionType = None,
+        clip_fn=None,
+        return_eps: bool = True,
     ):
         batch_size = x_t.size(0)
         if prediction_type is None:
@@ -381,16 +391,16 @@ class Sampler(nn.Module):
 
     def get_xt_minus_1(
         self,
-        model,
-        time_step,
-        x_t,
-        lm_outputs,
-        lm_mask,
-        micros={},
-        time_step_last=None,
-        guidance_scale=1,
-        ddim_eta=None,
-        return_details=False,
+        model,  # TODO - This is ml_mdm.diffusion.Model but importing diffusion is a circular import
+        time_step: torch.Tensor,
+        x_t: torch.Tensor,
+        lm_outputs: torch.Tensor,
+        lm_mask: torch.Tensor,
+        micros: dict = {},
+        time_step_last: torch.Tensor = None,
+        guidance_scale: float = 1,
+        ddim_eta: int = None,
+        return_details: bool = False,
     ):
         batch_size = x_t.shape[0]
         ones = torch.ones(batch_size, dtype=torch.long, device=self.gammas.device)
@@ -423,8 +433,15 @@ class Sampler(nn.Module):
             return x_s
 
     def forward_model(
-        self, model, x_t, t, lm_outputs, lm_mask, micros={}, guidance_scale=1
-    ):
+        self,
+        model,  # TODO - This is ml_mdm.diffusion.Model but to import diffusion it is a circular import
+        x_t: torch.Tensor,
+        t: torch.Tensor,
+        lm_outputs: torch.Tensor,
+        lm_mask: torch.Tensor,
+        micros: dict = {},
+        guidance_scale: float = 1,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         if guidance_scale != 1:
             assert x_t.shape[0] * 2 == lm_outputs.shape[0]
             pred, extras = model(
@@ -442,8 +459,11 @@ class Sampler(nn.Module):
         return pred, extras
 
     def _threshold_sample(
-        self, sample, dynamic_thresholding_ratio=0.995, sample_max_value=100
-    ):
+        self,
+        sample: torch.Tensor,
+        dynamic_thresholding_ratio: float = 0.995,
+        sample_max_value: float = 100,
+    ) -> torch.Tensor:
         """
         "Dynamic thresholding: At each sampling step we set s to a certain percentile absolute pixel value in xt0 (the
         prediction of x_0 at timestep t), and if s > 1, then we threshold xt0 to the range [-s, s] and then divide by
@@ -477,7 +497,7 @@ class Sampler(nn.Module):
 
         return sample
 
-    def clip_sample(self, pred_x0, image_scale=1):
+    def clip_sample(self, pred_x0: torch.Tensor, image_scale: int = 1) -> torch.Tensor:
         s = image_scale
         if self._config.threshold_function == ThresholdType.CLIP:
             return (pred_x0 * s).clip(-1, 1) / s
@@ -495,20 +515,20 @@ class Sampler(nn.Module):
 
     def _sample(
         self,
-        model,
-        x_t,
-        lm_outputs,
-        lm_mask,
-        micros,
-        return_sequence=False,
-        use_beta_tilde=False,
-        t=-1,
-        num_inference_steps=2000,
-        ddim_eta=None,
-        guidance_scale=1,
-        resample_steps=False,
-        disable_bar=True,
-        yield_output=False,
+        model,  # TODO - This is ml_mdm.diffusion.Model but to import diffusion it is a circular import
+        x_t: torch.Tensor,
+        lm_outputs: torch.Tensor,
+        lm_mask: torch.Tensor,
+        micros: dict,
+        return_sequence: bool = False,
+        use_beta_tilde: bool = False,
+        t: int = -1,
+        num_inference_steps: int = 2000,
+        ddim_eta: int = None,
+        guidance_scale: float = 1,
+        resample_steps: bool = False,
+        disable_bar: bool = True,
+        yield_output: bool = False,
         **post_args,
     ):
         """
@@ -559,12 +579,12 @@ class Sampler(nn.Module):
 
     def _postprocess(
         self,
-        x_t,
-        x0=None,
-        extra=None,
-        yield_full=False,
-        clip=False,
-        image_scale=None,
+        x_t: torch.Tensor,
+        x0: torch.Tensor = None,
+        extra: tuple = None,
+        yield_full: bool = False,
+        clip: bool = False,
+        image_scale: float = None,
         **unused,
     ):
         if image_scale is None:
@@ -578,7 +598,7 @@ class Sampler(nn.Module):
             return (x0, x_t, extra)
         return x_t
 
-    def set_timesteps(self, num_inference_steps=250):
+    def set_timesteps(self, num_inference_steps: int = 250) -> np.ndarray:
         step_ratio = (self._config.num_diffusion_steps + 1) / (num_inference_steps + 1)
         timesteps = (
             (np.arange(0, num_inference_steps + 1) * step_ratio)
