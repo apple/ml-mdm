@@ -75,7 +75,7 @@ class Nested4UNetConfig(Nested3UNetConfig):
     )
 
 
-def download(vision_model_path):
+def download(vision_model_path: str):
     import os
 
     from distributed import get_local_rank

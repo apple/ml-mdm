@@ -3,7 +3,7 @@
 """ Basic UNet-DDPM pipeline. """
 import logging
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Tuple
 
 from einops import rearrange
 
@@ -80,7 +80,7 @@ class Model(nn.Module):
         lm_outputs: torch.Tensor,
         lm_mask: torch.Tensor,
         micros: {},
-    ) -> (torch.Tensor, torch.Tensor):
+    ) -> Tuple(torch.Tensor, torch.Tensor):
         outputs = self.vision_model(x_t, times, lm_outputs, lm_mask, micros)
         if self._output_scale != 0:
             outputs = torch.tanh(outputs / self._output_scale) * self._output_scale
@@ -116,7 +116,7 @@ class Diffusion(nn.Module):
         self.model.eval()
         self.sampler.eval()
 
-    def get_xt_minus_1(self, t, x_t, lm_outputs, lm_mask):
+    def get_xt_minus_1(self, t, x_t, lm_outputs: torch.Tensor, lm_mask: torch.Tensor):
         self.eval()
         return self.sampler.get_xt_minus_1(t, x_t, lm_outputs, lm_mask)
 

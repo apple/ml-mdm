@@ -10,7 +10,7 @@ from ml_mdm.utils import fix_old_checkpoints
 
 
 class ModelEma(nn.Module):
-    def __init__(self, model, decay=0.9999, warmup_steps=0, device=None):
+    def __init__(self, model, decay: float=0.9999, warmup_steps: int = 0, device: torch.device =None):
         super(ModelEma, self).__init__()
         # make a copy of the model for accumulating moving average of weights
         self.module = deepcopy(model)
@@ -33,7 +33,7 @@ class ModelEma(nn.Module):
                     model_v = model_v.to(device=self.device)
                 ema_v.mul_(decay).add_(model_v, alpha=(1.0 - decay))
 
-    def save(self, fname, other_items=None):
+    def save(self, fname: str, other_items=None):
         logging.info(f"Saving EMA model file: {fname}")
         checkpoint = {"state_dict": self.module.state_dict()}
         if other_items is not None:
@@ -41,7 +41,7 @@ class ModelEma(nn.Module):
                 checkpoint[k] = v
         torch.save(checkpoint, fname)
 
-    def load(self, fname):
+    def load(self, fname: str):
         logging.info(f"Loading EMA model file: {fname}")
         fix_old_checkpoints.mimic_old_modules()
         checkpoint = torch.load(fname, map_location=lambda storage, loc: storage)

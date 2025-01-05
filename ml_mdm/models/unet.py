@@ -578,7 +578,7 @@ class ResNetBlock(nn.Module):
 
 @config.register_model("unet")
 class UNet(nn.Module):
-    def __init__(self, input_channels, output_channels, config: UNetConfig):
+    def __init__(self, input_channels: int, output_channels: int, config: UNetConfig):
         super().__init__()
         self.down_blocks = []
         self.config = config
@@ -776,7 +776,7 @@ class UNet(nn.Module):
     def model_type(self):
         return "unet"
 
-    def print_size(self, target_image_size=64):
+    def print_size(self, target_image_size: int =64):
         summary(
             self,
             [
@@ -791,7 +791,7 @@ class UNet(nn.Module):
             depth=4,
         )
 
-    def save(self, fname, other_items=None):
+    def save(self, fname: str, other_items=None):
         logging.info(f"Saving model file: {fname}")
         checkpoint = {"state_dict": self.state_dict()}
         if other_items is not None:
@@ -799,7 +799,7 @@ class UNet(nn.Module):
                 checkpoint[k] = v
         torch.save(checkpoint, fname)
 
-    def load(self, fname):
+    def load(self, fname: str):
         logging.info(f"Loading model file: {fname}")
         fix_old_checkpoints.mimic_old_modules()
         # first load to cpu or we will run out of memory.
