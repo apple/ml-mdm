@@ -116,7 +116,7 @@ class Diffusion(nn.Module):
         self.model.eval()
         self.sampler.eval()
 
-    def get_xt_minus_1(self, t, x_t, lm_outputs, lm_mask):
+    def get_xt_minus_1(self, t, x_t, lm_outputs: torch.Tensor, lm_mask: torch.Tensor):
         self.eval()
         return self.sampler.get_xt_minus_1(t, x_t, lm_outputs, lm_mask)
 

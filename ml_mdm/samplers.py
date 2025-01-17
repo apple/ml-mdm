@@ -657,8 +657,8 @@ class NestedSampler(Sampler):
         model,
         time_step,
         x_t,
-        lm_outputs,
-        lm_mask,
+        lm_outputs: torch.Tensor,
+        lm_mask: torch.Tensor,
         micros={},
         time_step_last=None,
         guidance_scale=1,
@@ -717,9 +717,9 @@ class NestedSampler(Sampler):
         x_t,
         x0=None,
         extra=None,
-        yield_full=False,
-        clip=False,
-        output_inner=False,
+        yield_full: bool=False,
+        clip: bool=False,
+        output_inner: bool =False,
         **unused,
     ):
         scales = [
@@ -772,7 +772,7 @@ class NestedSampler(Sampler):
         return out
 
     def forward_model(
-        self, model, x_t, t, lm_outputs, lm_mask, micros={}, guidance_scale=1
+        self, model, x_t, t, lm_outputs: torch.Tensor, lm_mask: torch.Tensor, micros={}, guidance_scale=1
     ):
         def cfg(pred):
             pred_uncond, pred = pred.chunk(2)
