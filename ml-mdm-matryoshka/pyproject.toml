@@ -5,9 +5,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 exclude = ["tests*", "*clis*"]
+namespaces = true
 
 [project]
-name = "ml_mdm"
+name = "ml-mdm-matryoshka"
 authors = [{name = "Apple"}]
 readme = "README.md"
 version = "1.0"
@@ -72,7 +73,7 @@ sections = ["FUTURE", "STDLIB", "THIRDPARTY", "NUMERIC", "FIRSTPARTY", "LOCALFOL
 known_numeric = ["torch", "torchvision", "numpy", "jax", "flax", "mlx"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=ml_mdm -m 'not gpu'"
+addopts = " -m 'not gpu'"
 markers = [
     "gpu" # tests that require a gpu
 ]
