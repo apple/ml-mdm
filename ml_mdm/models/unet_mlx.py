@@ -43,7 +43,11 @@ class ResNet_MLX(nn.Module):
         # TODO(ndjaitly): What about scales of weights.
         super(ResNet_MLX, self).__init__()
         self.config = config
-        self.norm1 = nn.GroupNorm(config.num_groups_norm, config.num_channels)
+        self.num_groups = config.num_groups_norm
+        self.num_channels = config.num_channels
+        self.norm1 = nn.GroupNorm(
+            config.num_groups_norm, config.num_channels, pytorch_compatible=True
+        )
         self.conv1 = nn.Conv2d(
             config.num_channels,
             config.output_channels,
@@ -52,7 +56,9 @@ class ResNet_MLX(nn.Module):
             bias=True,
         )
         self.time_layer = nn.Linear(time_emb_channels, config.output_channels * 2)
-        self.norm2 = nn.GroupNorm(config.num_groups_norm, config.output_channels)
+        self.norm2 = nn.GroupNorm(
+            config.num_groups_norm, config.output_channels, pytorch_compatible=True
+        )
         self.dropout = nn.Dropout(config.dropout)
         self.conv2 = zero_module_mlx(
             nn.Conv2d(
@@ -69,7 +75,12 @@ class ResNet_MLX(nn.Module):
             )
 
     def forward(self, x, temb):
-        h = nn.silu(self.norm1(x))
+        print("Shape before norm:", x.shape)
+        # Try explicitly permuting/reshaping?
+        h = self.norm1(x)
+        print("Shape after norm:", h.shape)
+        h = nn.silu(h)
+
         h = self.conv1(h)
         ta, tb = (
             self.time_layer(nn.silu(temb)).unsqueeze(-1).unsqueeze(-1).chunk(2, dim=1)
