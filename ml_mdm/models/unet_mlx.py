@@ -83,28 +83,47 @@ class SelfAttention_MLX(nn.Module):
             (k * scale).reshape(bs * self.num_heads, ch, -1),
         )  # More stable with f16 than dividing afterwards
         if mask is not None:
-            mask = (
-                mask.view(mask.size(0), 1, 1, mask.size(1))
-                .repeat(1, self.num_heads, 1, 1)
-                .flatten(0, 1)
+            # Reshape mask to match attention shape
+            # From [bs, seq_len] to [bs * num_heads, 1, seq_len]
+            expanded_mask = einops.array_api.repeat(
+                mask[:, None, :],  # Add dimension for broadcasting
+                "b 1 s -> (b h) 1 s",
+                h=self.num_heads,
             )
-            weight = weight.masked_fill(mask == 0, float("-inf"))
-        weight = mx.softmax(weight.float(), dim=-1).type(weight.dtype)
-        a = mx.einsum("bts,bcs->bct", weight, v.reshape(bs * self.num_heads, ch, -1))
-        return a.reshape(bs, -1, length)
+            # Apply mask
+            weight = mx.where(expanded_mask, weight, float("-inf"))
+
+        weight = mx.softmax(weight, axis=-1)
+
+        return mx.einsum(
+            "bts,bcs->bct", weight, v.reshape(bs * self.num_heads, ch, -1)
+        ).reshape(bs, width, length)
 
     def forward(self, x, cond=None, cond_mask=None):
         # assert (self.cond_dim is not None) == (cond is not None)
         b, c, *spatial = x.shape
         # x = x.reshape(b, c, -1)
         x = einops.array_api.rearrange(x, "b c h w -> b h w c")
-        print("rearrranged input tensor: ", x.shape)
+        print("input tensor for group norm: ", x.shape)
         qkv = self.qkv(self.norm(x))
-        q, k, v = qkv.reshape(b, 3 * c, -1).chunk(3, dim=1)
+
+        # q, k, v = qkv.reshape(b, 3 * c, -1).chunk(3, dim=1)
+        qkv = einops.array_api.rearrange(qkv, "b h w c -> b (h w) c")
+        qkv = einops.array_api.rearrange(qkv, "b s (three c) -> b three s c", three=3)
+        q, k, v = qkv[:, 0, :, :], qkv[:, 1, :, :], qkv[:, 2, :, :]
+        print(
+            "output tensor for groupnorm / input tensor for self attention: ", qkv.shape
+        )
         h = self.attention(q, k, v)
+        print("output tensor for self attention: ", qkv.shape)
         if self.cond_dim is not None and self.cond_dim > 0:
-            kv_cond = self.kv_cond(self.norm_cond(cond)).transpose(-2, -1)
-            k_cond, v_cond = kv_cond.chunk(2, dim=1)
+            kv_cond = einops.array_api.rearrange(
+                self.kv_cond(self.norm_cond(cond)), "b s c -> b c s"
+            )
+            kv_cond = einops.array_api.rearrange(
+                kv_cond, "b s (two c) -> b two s c", two=2
+            )
+            k_cond, v_cond = kv_cond[:, 0], kv_cond[:, 1]
             h_cond = self.attention(q, k_cond, v_cond, cond_mask)
             h = h + h_cond
         h = h.reshape(b, c, *spatial)
