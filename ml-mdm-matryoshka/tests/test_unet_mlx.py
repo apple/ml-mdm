@@ -109,13 +109,13 @@ def test_pytorch_mlx_self_attention():
     pytorch_attn_no_cond = SelfAttention(
         channels=channels,
         num_heads=num_heads,
-        cond_dim=None,  # Disable conditioning
+        cond_dim=None,  
         use_attention_ffn=True,
     )
     mlx_attn_no_cond = SelfAttention_MLX(
         channels=channels,
         num_heads=num_heads,
-        cond_dim=None,  # Disable conditioning
+        cond_dim=None,  
         use_attention_ffn=True,
     )
 
@@ -131,7 +131,7 @@ def test_pytorch_mlx_self_attention():
         pytorch_output_with_cond.detach().numpy(),
         np.array(mlx_output_with_cond),
         atol=1e-5, rtol=1e-5
-    )
+    ), "Outputs of PyTorch and MLX attention should match"
 
     # Check non-conditional outputs
     assert pytorch_output_no_cond.shape == pytorch_input.shape
@@ -140,6 +140,6 @@ def test_pytorch_mlx_self_attention():
         pytorch_output_no_cond.detach().numpy(),
         np.array(mlx_output_no_cond),
         atol=1e-5, rtol=1e-5
-    )
+    ), "Outputs without conditioning should match"
 
-    print("All tests passed!")
+    print("Self-attention test passed for both PyTorch and MLX!")
