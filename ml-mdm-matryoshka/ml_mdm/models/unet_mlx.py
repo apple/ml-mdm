@@ -8,7 +8,6 @@ import einops.array_api
 import mlx.core as mx
 import mlx.nn as nn
 
-
 def zero_module_mlx(module):
     """
     Zero out the parameters of an MLX module and return it.

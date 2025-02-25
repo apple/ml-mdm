@@ -57,6 +57,7 @@ def test_pytorch_mlp():
     print("Test passed for both PyTorch and MLX MLP!")
 
 
+
 def test_pytorch_mlx_self_attention():
     """
     Test for feature parity between PyTorch and MLX implementations of SelfAttention.
