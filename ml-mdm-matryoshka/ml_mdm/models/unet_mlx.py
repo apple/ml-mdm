@@ -74,7 +74,7 @@ class ResNet_MLX(nn.Module):
             config.num_groups_norm, 
             config.num_channels, 
             pytorch_compatible=True,
-            eps=1e-5  
+            eps=1e-5   #torch std
         )
 
         self.conv1 = nn.Conv2d(
