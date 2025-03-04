@@ -96,6 +96,44 @@ class SelfAttention1D_MLX(nn.Module):
         return x
 
 
+class TemporalAttentionBlock_MLX(nn.Module):
+    def __init__(
+        self, channels, num_heads=8, num_head_channels=-1, down=False, pos_emb=False
+    ):
+        super().__init__()
+        self.attn = SelfAttention1D_MLX(
+            channels, num_heads, num_head_channels, pos_emb=pos_emb
+        )
+        self.mlp = MLP_MLX(channels, multiplier=4)
+        self.down = down
+        if down:
+            self.down_conv = nn.Conv2d(
+                channels, channels, kernel_size=3, stride=2, padding=1, bias=True
+            )
+            self.up_conv = nn.Conv2d(
+                channels, channels, kernel_size=3, stride=1, padding=1, bias=True
+            )
+
+    def forward(self, x, temb):
+        x_ = x
+        if self.down:
+            # transformation for mlx format
+            x = einops.array_api.rearrange(x, "b c h w -> b h w c")
+            x = self.down_conv(x)
+
+        T, H, W = x.shape[0] // temb.shape[0], x.shape[2], x.shape[3]
+        x = einops.array_api.rearrange(x, "(b t) c h w -> (b h w) t c", t=T)
+        x = self.mlp.forward(self.attn.forward(x, None))
+        x = einops.array_api.rearrange(x, "(b h w) t c -> (b t) c h w", h=H, w=W)
+
+        if self.down:
+            x = self.up_conv(nn.Upsample(scale_factor=2, mode="nearest")(x))
+
+        x = einops.array_api.rearrange(x, "b h w c -> b c h w")
+        x = x + x_
+        return x
+
+
 class MLP_MLX(nn.Module):  # mlx based nn.Module
     def __init__(self, channels, multiplier=4):
         super().__init__()
