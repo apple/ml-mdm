@@ -117,19 +117,23 @@ class TemporalAttentionBlock_MLX(nn.Module):
     def forward(self, x, temb):
         x_ = x
         if self.down:
-            # transformation for mlx format
             x = einops.array_api.rearrange(x, "b c h w -> b h w c")
             x = self.down_conv(x)
+            x = einops.array_api.rearrange(x, "b h w c -> b c h w")
 
+        x = einops.array_api.rearrange(x, "b c h w -> b h w c")
         T, H, W = x.shape[0] // temb.shape[0], x.shape[2], x.shape[3]
-        x = einops.array_api.rearrange(x, "(b t) c h w -> (b h w) t c", t=T)
-        x = self.mlp.forward(self.attn.forward(x, None))
-        x = einops.array_api.rearrange(x, "(b h w) t c -> (b t) c h w", h=H, w=W)
+        x = einops.array_api.rearrange(x, "(b t) h w c -> (b h w) t c", t=T)
+        x = self.attn.forward(x, None)
+        x = self.mlp.forward(x)
+        x = einops.array_api.rearrange(x, "(b h w) t c -> (b t) h w c", h=H, w=W)        
+        x = einops.array_api.rearrange(x, "b h w c -> b c h w")
 
         if self.down:
-            x = self.up_conv(nn.Upsample(scale_factor=2, mode="nearest")(x))
-
-        x = einops.array_api.rearrange(x, "b h w c -> b c h w")
+            x = einops.array_api.rearrange(x, "b c h w -> b h w c")
+            x = nn.Upsample(scale_factor=2, mode="nearest")(x)
+            x = self.up_conv(x)
+            x = einops.array_api.rearrange(x, "b h w c -> b c h w")
         x = x + x_
         return x
 
@@ -147,4 +151,3 @@ class MLP_MLX(nn.Module):  # mlx based nn.Module
 
     def forward(self, x):
         return x + self.main(x)
-
