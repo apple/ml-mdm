@@ -5,9 +5,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 exclude = ["tests*", "*clis*"]
+namespaces = true
 
 [project]
-name = "ml_mdm"
+name = "ml-mdm-matryoshka"
 authors = [{name = "Apple"}]
 readme = "README.md"
 version = "1.0"
@@ -17,33 +18,53 @@ description = "A python package to simplify the creation of text conditioned ima
 dependencies = [
     "dataclass-wizard",
     "einops",
-    "fastapi>=0.109.1", # Required due to CVE-2024-24762
-    "gradio>=4.14", # Required due to CVE-2023-6572
     "httpx==0.24.1",
-    "imageio[ffmpeg]",
-    "matplotlib",
     "mlx-data",
     "numpy<2",
-    "pytorch-model-summary",
-    "rotary-embedding-torch",
     "simple-parsing==0.1.5",
-    "tensorboardX==2.6.2.2",
-    "tensorboard==2.16.2",
-    "torchinfo",
-    "torchmetrics[image]",
     "torchvision",
     "transformers",
     "sentencepiece",
-    "boto3",
     "torch==2.2.2",
-    "pytest",
-    "pytest-cov",
-    "pre-commit"
+    "matplotlib",
+    "gradio",
+    "boto3",
+    "torchmetrics",
+    "img2dataset",
+    "torchinfo"
 ]
 
 [project.optional-dependencies]
+cpu = [ 
+    "torch==2.2.2+cpu", 
+    "tensorflow==2.5.0", 
+] 
+gpu = [ 
+    "torch==2.2.2+cu111", 
+    "tensorflow-gpu==2.5.0", 
+]
 data_prep = [
-    "img2dataset"
+    "img2dataset",
+    "boto3",
+]
+web_demo = [
+    "fastapi>=0.109.1", # Required due to CVE-2024-24762
+    "gradio>=4.14", # Required due to CVE-2023-6572
+    "matplotlib",
+    "imageio[ffmpeg]",
+]
+training = [
+    "tensorboard==2.16.2",
+    "tensorboardX==2.6.2.2",
+    "torchmetrics[image]",
+    "rotary-embedding-torch",
+    "pytorch-model-summary",
+    "torchinfo",
+]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pre-commit",
 ]
 
 [tool.isort]
@@ -51,9 +72,8 @@ profile = "black"
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "NUMERIC", "FIRSTPARTY", "LOCALFOLDER"]
 known_numeric = ["torch", "torchvision", "numpy", "jax", "flax", "mlx"]
 
-
 [tool.pytest.ini_options]
-addopts = "--cov=ml_mdm"
+addopts = " -m 'not gpu'"
 markers = [
     "gpu" # tests that require a gpu
 ]

@@ -10,6 +10,7 @@ from ml_mdm.language_models import factory
 
 
 def test_get_dataset():
+    """Test dataset loading and verify sample format and dimensions."""
     tokenizer = factory.create_tokenizer("data/t5.vocab")
     dataset = reader.get_dataset(
         tokenizer=tokenizer,
@@ -31,6 +32,7 @@ def test_get_dataset():
 
 
 def test_get_dataset_partition():
+    """Test dataset partitioning and iteration."""
     tokenizer = factory.create_tokenizer("data/t5.vocab")
     train_loader = reader.get_dataset_partition(
         partition_num=0,
@@ -46,6 +48,7 @@ def test_get_dataset_partition():
 
 
 def test_process_text():
+    """Test text tokenization with default reader config."""
     line = "A bicycle on top of a boat."
     tokenizer = factory.create_tokenizer("data/t5.vocab")
     tokens = reader.process_text(
@@ -53,3 +56,6 @@ def test_process_text():
     )
     assert len(tokens) > 0
     assert len(tokens[0]) > 0
+
+
+test_get_dataset()

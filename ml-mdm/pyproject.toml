@@ -1,0 +1,12 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools"]
+
+[project]
+dependencies = []
+name = "ml-mdm"
+version = "0.1.0"
+
+[tool.setuptools.packages.find]
+namespaces = true
+where = ["."]

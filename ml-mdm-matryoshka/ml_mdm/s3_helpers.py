@@ -12,10 +12,10 @@ ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL", None)
 
 
 def download_object(
-    bucket_name,
-    file_name,
-    download_path=None,
-    endpoint_url=ENDPOINT_URL,
+    bucket_name: str,
+    file_name: str,
+    download_path: str =None,
+    endpoint_url: str = ENDPOINT_URL,
     max_bandwidth=None,
 ):
     """Downloads an object from S3 to local."""
@@ -37,7 +37,7 @@ def download_object(
     return download_path
 
 
-def download_object_from_full_path(path, download_path=None, endpoint_url=ENDPOINT_URL):
+def download_object_from_full_path(path: str, download_path: str =None, endpoint_url: str = ENDPOINT_URL):
     bucket_name, parent_path, basename = _parse_path(path)
     file_name = os.path.join(parent_path, basename)
     return download_object(
@@ -46,10 +46,10 @@ def download_object_from_full_path(path, download_path=None, endpoint_url=ENDPOI
 
 
 def upload_object(
-    bucket_name,
-    file_name,
-    upload_path,
-    endpoint_url=ENDPOINT_URL,
+    bucket_name: str,
+    file_name: str,
+    upload_path: str,
+    endpoint_url: str = ENDPOINT_URL,
 ):
     """Uload an object from S3 to local."""
 
@@ -70,7 +70,7 @@ def _parse_path(tsv_pattern):
     return bucket, "/".join(parts[3:-1]), pattern
 
 
-def get_file_list(tsv_pattern, endpoint_url=ENDPOINT_URL):
+def get_file_list(tsv_pattern: str, endpoint_url: str = ENDPOINT_URL):
     bucket_name, parent_path, pattern = _parse_path(tsv_pattern)
     resource = boto3.resource("s3", endpoint_url=endpoint_url)
     bucket = resource.Bucket(bucket_name)
@@ -84,7 +84,7 @@ def get_file_list(tsv_pattern, endpoint_url=ENDPOINT_URL):
     return fnames
 
 
-def download_parallel(files, endpoint_url=ENDPOINT_URL):
+def download_parallel(files: str, endpoint_url: str=ENDPOINT_URL):
     logging.info("Doing parallel download")
     with ProcessPoolExecutor() as executor:
         logging.info(f"Submitting {files}")
