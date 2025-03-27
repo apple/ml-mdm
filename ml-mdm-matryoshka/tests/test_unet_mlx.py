@@ -5,7 +5,7 @@ import mlx.core as mx
 import numpy as np
 import torch
 
-from ml_mdm.models.unet import MLP, SelfAttention1D, TemporalAttentionBlock, ResNet, ResNetConfig  , SelfAttention1D, SelfAttention, SelfAttention1DBlock
+from ml_mdm.models.unet import MLP, SelfAttention1D, TemporalAttentionBlock, ResNet, ResNetBlock, ResNetConfig  , SelfAttention1D, SelfAttention, SelfAttention1DBlock
 from ml_mdm.models.unet_mlx import (
     MLP_MLX,
     SelfAttention1D_MLX,
@@ -278,7 +278,7 @@ def test_self_attention_1d():
     print("Test passed for both PyTorch and MLX SelfAttention1D!")
 
 def test_pytorch_mlx_self_attention_1d_block():
-    channels = 8
+    channels = 32
 
     pytorch_self1d = SelfAttention1DBlock(channels=channels)
     mlx_self1d = SelfAttention1DBlock_MLX(channels=channels)
@@ -286,8 +286,8 @@ def test_pytorch_mlx_self_attention_1d_block():
     pytorch_self1d.eval()
     mlx_self1d.eval()
 
-    # Create a dummy input tensor
-    input_tensor = torch.randn(2, channels, 16)
+    # Create a dummy input tensor 
+    input_tensor = torch.randn(2, channels, channels)
 
     # Pass the input through the PyTorch model
     pytorch_output = pytorch_self1d(input_tensor, None)
@@ -306,6 +306,72 @@ def test_pytorch_mlx_self_attention_1d_block():
 
     print("Test passed for both PyTorch and MLX SelfAttention1DBlock!")
 
+
+def test_pytorch_mlx_self_restnet_block():
+    
+    temporal_dim = 8
+    num_residual_blocks = 2
+    num_attention_layers = 1
+    downsample_output = False
+    upsample_output = False
+    resnet_configs = [ResNetConfig()]
+    conditioning_feature_dim = -1
+    temporal_mode = False
+    temporal_pos_emb = False
+    temporal_spatial_ds = False
+    num_temporal_attention_layers = None
+    mlx_block = ResNetBlock_MLX(
+        temporal_dim=temporal_dim,
+        num_residual_blocks=num_residual_blocks,
+        num_attention_layers=num_attention_layers,
+        downsample_output=downsample_output,
+        upsample_output=upsample_output,
+        resnet_configs=resnet_configs,
+        conditioning_feature_dim=conditioning_feature_dim,
+        temporal_mode=temporal_mode,
+        temporal_pos_emb=temporal_pos_emb,
+        temporal_spatial_ds=temporal_spatial_ds,
+        num_temporal_attention_layers=num_temporal_attention_layers,
+        )
+
+    pytorch_block = ResNetBlock(
+        temporal_dim=temporal_dim,
+        num_residual_blocks=num_residual_blocks,
+        num_attention_layers=num_attention_layers,
+        downsample_output=downsample_output,
+        upsample_output=upsample_output,
+        resnet_configs=resnet_configs,
+        conditioning_feature_dim=conditioning_feature_dim,
+        temporal_mode=temporal_mode,
+        temporal_pos_emb=temporal_pos_emb,
+        temporal_spatial_ds=temporal_spatial_ds,
+        num_temporal_attention_layers=num_temporal_attention_layers,
+    )
+
+    pytorch_block.eval()
+    mlx_block.eval()
+
+    # Create a dummy input tensor
+    input_tensor = torch.randn(2, channels, 16, 16)
+    temb_tensor = torch.randn(2, temporal_dim)
+    
+    # Pass the input through the PyTorch model
+    pytorch_output = pytorch_block(input_tensor, temb_tensor, return_activations=True)
+
+    # Convert the input to MLX format
+    mlx_input = mx.array(input_tensor.numpy())
+    mlx_temb = mx.array(temb_tensor.numpy())
+
+    # Pass the input through the MLX model
+    mlx_output = mlx_block.forward(mlx_input, mlx_temb, return_activations=True)
+
+    # Assertions to validate the output shape and properties
+    assert pytorch_output.shape == mlx_output.shape, "Output shape mismatch"
+    assert np.allclose(
+        pytorch_output.detach().numpy(), np.array(mx.stop_gradient(mlx_output)), atol=1e-5
+    ), "Outputs of PyTorch and MLX ResNetBlock should match"
+
+    print("Test passed for both PyTorch and MLX ResNetBlock!")
 
 
 
@@ -351,12 +417,12 @@ def test_pytorch_mlx_temporal_attention_block():
     mlx_output = mlx_block.forward(mlx_input, mlx_temb)
 
     # Print output tensors for debugging
-    print("pytorch_output tensor shape: ", pytorch_output.shape)
-    print("mlx_output tensor shape: ", mlx_output.shape)
-    print("torch: ", pytorch_output)
-    print("mlx : ", mlx_output)
-    print("mean difference: ", np.mean(np.abs(pytorch_output.detach().numpy() - np.array(mx.stop_gradient(mlx_output)))))  #0.35
-    print("psnr: ", 10 * np.log10(np.max(pytorch_output.detach().numpy())**2 / np.mean((pytorch_output.detach().numpy() - np.array(mx.stop_gradient(mlx_output)))**2))) # 19.2 dB
+    # print("pytorch_output tensor shape: ", pytorch_output.shape)
+    # print("mlx_output tensor shape: ", mlx_output.shape)
+    # print("torch: ", pytorch_output)
+    # print("mlx : ", mlx_output)
+    # print("mean difference: ", np.mean(np.abs(pytorch_output.detach().numpy() - np.array(mx.stop_gradient(mlx_output)))))  #0.35
+    # print("psnr: ", 10 * np.log10(np.max(pytorch_output.detach().numpy())**2 / np.mean((pytorch_output.detach().numpy() - np.array(mx.stop_gradient(mlx_output)))**2))) # 19.2 dB
     
     assert pytorch_output.shape == tuple(mlx_output.shape), f"Output shape mismatch: {pytorch_output.shape} vs {mlx_output.shape}"
 

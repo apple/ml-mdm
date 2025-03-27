@@ -374,9 +374,9 @@ class SelfAttention1DBlock_MLX(nn.Module):
         self.mlp = MLP_MLX(channels, mlp_multiplier)
 
     def forward(self, x, mask):
-        x = einops.array_api.rearrange(x, "b c h w -> b h w c")
-        x = self.mlp.forward(self.attn.forward(x, mask))
-        x = einops.array_api.rearrange(x, "b h w c -> b c h w")
+       # x = einops.array_api.rearrange(x, "b c h w -> b h w c")
+        x = self.mlp.forward(self.attn.forward(x, None))
+       # x = einops.array_api.rearrange(x, "b h w c -> b c h w")
         return x
 
 class ResNetBlock_MLX(nn.Module):
