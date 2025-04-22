@@ -5,7 +5,7 @@ import mlx.core as mx
 import numpy as np
 import torch
 
-from ml_mdm.models.unet import MLP, SelfAttention1D, TemporalAttentionBlock, ResNet, ResNetBlock, ResNetConfig  , SelfAttention1D, SelfAttention, SelfAttention1DBlock
+from ml_mdm.models.unet import MLP, SelfAttention1D, TemporalAttentionBlock, ResNet, ResNetBlock, ResNetConfig  , SelfAttention1D, SelfAttention, SelfAttention1DBlock,  UNet, UNetConfig, ResNetConfig
 from ml_mdm.models.unet_mlx import (
     MLP_MLX,
     SelfAttention1D_MLX,
@@ -17,7 +17,7 @@ from ml_mdm.models.unet_mlx import (
     init_weights,
     zero_module_mlx,
     SelfAttention1DBlock_MLX,
-    
+    UNet_MLX
 )
 
 def test_pytorch_mlp():
@@ -493,3 +493,94 @@ def test_pytorch_mlx_temporal_attention_block():
     ), "Outputs of PyTorch and MLX TemporalAttentionBlock should match"
 
     print("Test passed for both PyTorch and MLX TemporalAttentionBlock!")
+
+
+def test_pytorch_mlx_unet():
+    """
+    Test for verifying parity between PyTorch and MLX implementations of UNet.
+    This test ensures that both implementations produce similar outputs given the same inputs.
+    """
+
+
+    # Set random seeds for reproducibility
+    torch.manual_seed(42)
+    np.random.seed(42)
+    mx.random.seed(42)
+    
+    # Define test parameters
+    batch_size = 2
+    input_channels = 3
+    output_channels = 3
+    image_size = 32
+    
+    # Create a simple UNetConfig for testing
+    resnet_config = ResNetConfig(
+        num_channels=64,
+        output_channels=64,
+        num_groups_norm=32,
+        dropout=0.0,  # Set to 0 for deterministic comparison
+        use_attention_ffn=False,
+    )
+    
+    config = UNetConfig(
+        num_resnets_per_resolution="2",
+        resolution_channels="64,128,256",
+        attention_levels="1,2",
+        num_attention_layers="1",
+        conditioning_feature_dim=-1,  # No conditioning for simplicity
+        skip_mid_blocks=False,
+        temporal_mode=False,
+        resnet_config=resnet_config
+    )
+    
+    # Create model instances
+    pytorch_unet = UNet(input_channels=input_channels, output_channels=output_channels, config=config)
+    mlx_unet = UNet_MLX(input_channels=input_channels, output_channels=output_channels, config=config)
+    
+    # Set models to evaluation mode
+    pytorch_unet.eval()
+    mlx_unet.eval()
+    
+    # Create input tensors
+    x_torch = torch.randn(batch_size, input_channels, image_size, image_size)
+    times_torch = torch.ones(batch_size)  # Simple timestep input
+    
+    # Get PyTorch output
+    with torch.no_grad():
+        pytorch_output = pytorch_unet(x_torch, times_torch)
+    
+    # Convert inputs to MLX format
+    # PyTorch uses NCHW format, MLX uses NHWC
+    x_numpy = x_torch.detach().numpy()
+    # Convert from NCHW to NHWC format for MLX
+    x_numpy_nhwc = np.transpose(x_numpy, (0, 2, 3, 1))
+    x_mlx = mx.array(x_numpy_nhwc)
+    times_mlx = mx.array(times_torch.detach().numpy())
+    
+    # Get MLX output
+    mlx_output = mlx_unet.forward(x_mlx, times_mlx)
+    
+    # Convert MLX output to numpy for comparison
+    mlx_output_numpy = np.array(mx.stop_gradient(mlx_output))
+    
+    # Convert MLX output from NHWC back to NCHW format for comparison with PyTorch
+    mlx_output_numpy_nchw = np.transpose(mlx_output_numpy, (0, 3, 1, 2))
+    
+    # Print shapes for debugging
+    print("PyTorch output shape (NCHW):", pytorch_output.shape)
+    print("MLX output shape (NHWC):", mlx_output.shape)
+    print("MLX output converted to NCHW:", mlx_output_numpy_nchw.shape)
+    
+    # Ensure shapes match after conversion
+    assert pytorch_output.shape == mlx_output_numpy_nchw.shape, f"Output shape mismatch: {pytorch_output.shape} vs {mlx_output_numpy_nchw.shape}"
+    
+    # Compare outputs with increased tolerance to allow for implementation differences
+    assert np.allclose(
+        pytorch_output.detach().numpy(),
+        mlx_output_numpy_nchw,
+        rtol=1e-4,  # Increased tolerance for numerical differences
+        atol=1e-4,  # Increased tolerance for numerical differences
+    ), "Outputs of PyTorch UNet and MLX UNet should be similar"
+    
+    print("Test passed for both PyTorch and MLX UNet implementations!")
+
