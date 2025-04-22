@@ -902,7 +902,7 @@ class UNet_MLX(nn.Module):
         logging.info(f"Loading model file: {fname}")
         fix_old_checkpoints.mimic_old_modules()
         # first load to cpu or we will run out of memory.
-        checkpoint = torch.load(fname, map_location=lambda storage, loc: storage)
+        checkpoint = mx.load(fname)
         new_state_dict = self.state_dict()
         filtered_state_dict = {
             key: value
