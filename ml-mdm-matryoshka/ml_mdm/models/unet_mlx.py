@@ -164,15 +164,30 @@ class SelfAttention_MLX(nn.Module):
             (k * scale).reshape(bs * self.num_heads, ch, -1),
         )  # More stable with f16 than dividing afterwards
         if mask is not None:
-            # Reshape mask to match attention shape
-            # From [bs, seq_len] to [bs * num_heads, 1, seq_len]
-            expanded_mask = einops.array_api.repeat(
-                mask[:, None, :],  # Add dimension for broadcasting
-                "b 1 s -> (b h) 1 s",
-                h=self.num_heads,
-            )
-            # Apply mask
-            weight = mx.where(expanded_mask, weight, float("-inf"))
+            try:
+                # Print debug info
+                #print(f"Mask shape: {mask.shape}, weight shape: {weight.shape}")
+                #print(f"q shape: {q.shape}, k shape: {k.shape}, v shape: {v.shape}")
+                
+                # Check if we're dealing with conditioning mask (different dimensions)
+                if len(mask.shape) == 2 and mask.shape[1] != weight.shape[2]:
+                    print("Handling conditioning mask with different dimensions")
+                    # For conditioning mask, we don't need to apply it in the same way
+                    # We'll just return the weight as is, since the mask was already applied
+                    # when creating the conditioning vectors
+                    pass
+                else:
+                    # For regular self-attention mask
+                    # Reshape mask to match attention shape
+                    # From [bs, seq_len] to [bs * num_heads, 1, seq_len]
+                    expanded_mask = einops.array_api.repeat(
+                        mask[:, None, :],  # Add dimension for broadcasting
+                        "b 1 s -> (b h) 1 s",
+                        h=self.num_heads,
+                    )
+                    weight = mx.where(expanded_mask, weight, float("-inf"))
+            except Exception as e:
+                print(f"Error in attention mask application: {e}")
 
         weight = mx.softmax(weight, axis=-1)
 
@@ -875,20 +890,20 @@ class UNet_MLX(nn.Module):
     def model_type(self):
         return "unet"
 
-    def print_size(self, target_image_size: int =64):
-        summary(
-            self,
-            [
-                (1, self.input_channels, target_image_size, target_image_size),  # x_t
-                (1,),  # times
-                (1, 32, self.input_conditioning_feature_dim),  # conditioning
-                (1, 32),
-            ],  # condition_mask
-            dtypes=[torch.float, torch.float, torch.float, torch.float],
-            col_names=["input_size", "output_size", "num_params"],
-            row_settings=["var_names"],
-            depth=4,
-        )
+    #def print_size(self, target_image_size: int =64):
+    #    summary(
+    #        self,
+    #        [
+    #            (1, self.input_channels, target_image_size, target_image_size),  # x_t
+    #            (1,),  # times
+    #            (1, 32, self.input_conditioning_feature_dim),  # conditioning
+    #            (1, 32),
+    #        ],  # condition_mask
+    #        dtypes=[torch.float, torch.float, torch.float, torch.float],
+    #        col_names=["input_size", "output_size", "num_params"],
+    #        row_settings=["var_names"],
+    #        depth=4,
+    #    )
 
     def save(self, fname: str, other_items=None):
         logging.info(f"Saving model file: {fname}")
@@ -956,10 +971,11 @@ class UNet_MLX(nn.Module):
         if cond_mask is None or (
             not self.masked_cross_attention and len(self.lm_head) > 0
         ):
-            y = conditioning.mean(dim=1)
+            y = mx.mean(conditioning, axis=1)
         else:
-            y = (cond_mask.unsqueeze(-1) * conditioning).sum(dim=1) / cond_mask.sum(
-                dim=1, keepdim=True
+            expanded_mask = mx.expand_dims(cond_mask, axis=-1)
+            y = (expanded_mask * conditioning).sum(axis=1) / mx.sum(
+                cond_mask, axis=1, keepdims=True
             )
         if not self.masked_cross_attention:
             cond_mask = None

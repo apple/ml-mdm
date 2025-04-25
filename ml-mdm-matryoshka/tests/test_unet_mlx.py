@@ -545,7 +545,6 @@ def test_pytorch_mlx_unet():
     x_torch = torch.randn(batch_size, input_channels, image_size, image_size)
     times_torch = torch.ones(batch_size)  # Simple timestep input
     
-    # Get PyTorch output
     with torch.no_grad():
         pytorch_output = pytorch_unet(x_torch, times_torch)
     
@@ -557,19 +556,16 @@ def test_pytorch_mlx_unet():
     x_mlx = mx.array(x_numpy_nhwc)
     times_mlx = mx.array(times_torch.detach().numpy())
     
-    # Get MLX output
     mlx_output = mlx_unet.forward(x_mlx, times_mlx)
     
-    # Convert MLX output to numpy for comparison
     mlx_output_numpy = np.array(mx.stop_gradient(mlx_output))
     
     # Convert MLX output from NHWC back to NCHW format for comparison with PyTorch
     mlx_output_numpy_nchw = np.transpose(mlx_output_numpy, (0, 3, 1, 2))
     
-    # Print shapes for debugging
-    print("PyTorch output shape (NCHW):", pytorch_output.shape)
-    print("MLX output shape (NHWC):", mlx_output.shape)
-    print("MLX output converted to NCHW:", mlx_output_numpy_nchw.shape)
+    #print("PyTorch output shape (NCHW):", pytorch_output.shape)
+    #print("MLX output shape (NHWC):", mlx_output.shape)
+    #print("MLX output converted to NCHW:", mlx_output_numpy_nchw.shape)
     
     # Ensure shapes match after conversion
     assert pytorch_output.shape == mlx_output_numpy_nchw.shape, f"Output shape mismatch: {pytorch_output.shape} vs {mlx_output_numpy_nchw.shape}"
@@ -584,3 +580,103 @@ def test_pytorch_mlx_unet():
     
     print("Test passed for both PyTorch and MLX UNet implementations!")
 
+
+def test_pytorch_mlx_unet_with_conditioning():
+    """
+    Test for verifying parity between PyTorch and MLX implementations of UNet with conditioning.
+    This test ensures that both implementations produce similar outputs when conditioning is used.
+    """
+    # Set random seeds for reproducibility
+    torch.manual_seed(42)
+    np.random.seed(42)
+    mx.random.seed(42)
+    
+    # Define test parameters
+    batch_size = 2
+    input_channels = 3
+    output_channels = 3
+    image_size = 32
+    conditioning_feature_dim = 64
+    seq_len = 8  # Length of conditioning sequence
+    
+    # Create a UNetConfig with conditioning
+    resnet_config = ResNetConfig(
+        num_channels=64,
+        output_channels=64,
+        num_groups_norm=32,
+        dropout=0.0,  # Set to 0 for deterministic comparison
+        use_attention_ffn=False,
+    )
+    
+    config = UNetConfig(
+        num_resnets_per_resolution="2",
+        resolution_channels="64,128,256",
+        attention_levels="1,2",
+        num_attention_layers="1",
+        conditioning_feature_dim=conditioning_feature_dim,  # Enable conditioning
+        conditioning_feature_proj_dim=-1,  # No projection for simplicity
+        skip_mid_blocks=False,
+        temporal_mode=False,
+        resnet_config=resnet_config
+    )
+    
+    pytorch_unet = UNet(input_channels=input_channels, output_channels=output_channels, config=config)
+    mlx_unet = UNet_MLX(input_channels=input_channels, output_channels=output_channels, config=config)
+    
+    pytorch_unet.eval()
+    mlx_unet.eval()
+    
+    # Create input tensors
+    x_torch = torch.randn(batch_size, input_channels, image_size, image_size)
+    times_torch = torch.ones(batch_size)  # Simple timestep input
+    
+    # Create conditioning tensors
+    conditioning_torch = torch.randn(batch_size, seq_len, conditioning_feature_dim)
+    cond_mask_torch = torch.ones(batch_size, seq_len)  # All conditioning tokens are valid
+    
+    with torch.no_grad():
+        pytorch_output = pytorch_unet(
+            x_torch, 
+            times_torch, 
+            conditioning=conditioning_torch, 
+            cond_mask=cond_mask_torch
+        )
+    
+    # Convert inputs to MLX format
+    x_numpy = x_torch.detach().numpy()
+    # Convert from NCHW to NHWC format for MLX
+    x_numpy_nhwc = np.transpose(x_numpy, (0, 2, 3, 1))
+    x_mlx = mx.array(x_numpy_nhwc)
+    times_mlx = mx.array(times_torch.detach().numpy())
+    
+    # Convert conditioning to MLX format
+    conditioning_mlx = mx.array(conditioning_torch.detach().numpy())
+    cond_mask_mlx = mx.array(cond_mask_torch.detach().numpy())
+    
+    # Get MLX output
+    mlx_output = mlx_unet.forward(
+        x_mlx, 
+        times_mlx, 
+        conditioning=conditioning_mlx, 
+        cond_mask=cond_mask_mlx
+    )
+    
+    mlx_output_numpy = np.array(mx.stop_gradient(mlx_output))
+    
+    mlx_output_numpy_nchw = np.transpose(mlx_output_numpy, (0, 3, 1, 2))
+    
+    #print("PyTorch output shape (NCHW):", pytorch_output.shape)
+    #print("MLX output shape (NHWC):", mlx_output.shape)
+    #print("MLX output converted to NCHW:", mlx_output_numpy_nchw.shape)
+    
+    # Ensure shapes match after conversion
+    assert pytorch_output.shape == mlx_output_numpy_nchw.shape, f"Output shape mismatch: {pytorch_output.shape} vs {mlx_output_numpy_nchw.shape}"
+    
+    assert np.allclose(
+        pytorch_output.detach().numpy(),
+        mlx_output_numpy_nchw,
+        rtol=1e-4,  # Increased tolerance for numerical differences
+        atol=1e-4,  # Increased tolerance for numerical differences
+    ), "Outputs of PyTorch UNet and MLX UNet with conditioning should be similar"
+    
+    print("Test passed for both PyTorch and MLX UNet implementations with conditioning!")
