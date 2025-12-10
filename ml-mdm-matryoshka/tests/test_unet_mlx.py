@@ -63,6 +63,7 @@ def test_pytorch_mlp():
 
 
 def test_self_attention_1d():
+    """Check parity between PyTorch and MLX SelfAttention1D outputs and shapes."""
     # Define parameters
     channels = 8
     num_heads = 2

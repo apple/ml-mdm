@@ -7,14 +7,17 @@ from pathlib import Path
 from ml_mdm.language_models.tokenizer import Tokenizer # Tokenizer class from tokenizer.py
 
 def test_tokenizer_bert():
+    """Ensure BERT tokenizer loads from the test vocab file without errors."""
     f = Path(__file__).parent.parent/"data/bert.vocab"     # To solve from relative to absolute import
     assert Tokenizer(f, mode="bert")
 
 def test_tokenizer_t5():
+    """Ensure T5 tokenizer loads from the test vocab file without errors."""
     f = Path(__file__).parent.parent/"data/t5.vocab"   
     assert Tokenizer(f, mode="tf")
     
 def test_tokenizer():
+    """Ensure default tokenizer loads from the Imagenet vocab file."""
     f = Path(__file__).parent.parent/"data/imagenet.vocab"   
     assert Tokenizer(f)
 
