@@ -1,21 +1,5 @@
 # For licensing see accompanying LICENSE file.
 # Copyright (C) 2024 Apple Inc. All rights reserved.
-"""Program to download training / eval data.
-
-It takes in data config file with regular expressions for training and eval
-
-train:
-    files:
-        - s3://mlx/dataset/imagenet-64px/
-        - s3://mlx/dataset/CC12M-64px/training.tsv
-eval:
-    files:
-        - s3://mlx/dataset/CC12M-64px/validation.tsv
-
-In addtion it takes arguments for the subset that this job will handle
-(training or eval or all), and what node number the job is and how many
-nodes this data will be distributed over.
-"""
 
 import simple_parsing
 import csv
