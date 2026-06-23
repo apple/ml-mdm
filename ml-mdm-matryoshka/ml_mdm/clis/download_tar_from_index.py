@@ -184,31 +184,7 @@ def get_files(
         ff.prefetch(cur_files)
         for fname in cur_files:
             ff.fetch(fname)
-
-    if pretrained_text_embeddings is not None:
-        logging.info(f"Downloading text embeddings")
-        ff = mlx.data.AWSFileFetcher(
-            endpoint=endpoint_url,
-            bucket="jiatao-datasets/text2image",
-            prefix="",
-            local_prefix="datasets",
-            num_threads=16,
-            num_prefetch_max=3,
-            verbose=True,
-        )
-
-        def _proc(x):
-            dname, fname = x.split("/")[-2], x.split("/")[-1]
-            return f"{dname}/{dname}_{pretrained_text_embeddings}/{fname}"
-
-        files = [_proc(ff) for ff in files]
-        for i in range(0, len(files), num_concurrent_fetches):
-            cur_files = files[i : min(i + num_concurrent_fetches, len(files))]
-            ff.prefetch(cur_files)
-            for fname in cur_files:
-                ff.fetch(fname)
-        files = ["datasets/" + fi for fi in files]
-
+            
     # note that, if using pretrained text emebddings, training config will be override
     index_file = open(output_file, "w")
     index_file.write("filename\n")
