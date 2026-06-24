@@ -5,11 +5,12 @@ import mlx.core as mx
 import numpy as np
 import torch
 
-from ml_mdm.models.unet import MLP, SelfAttention1D, TemporalAttentionBlock
+from ml_mdm.models.unet import MLP, SelfAttention1D, TemporalAttentionBlock, SelfAttention
 from ml_mdm.models.unet_mlx import (
     MLP_MLX,
     SelfAttention1D_MLX,
     TemporalAttentionBlock_MLX,
+    SelfAttention_MLX
 )
 
 
@@ -56,11 +57,100 @@ def test_pytorch_mlp():
 
     # Validate numerical equivalence using numpy
     assert np.allclose(
+
         output.detach().numpy(), np.array(mx.stop_gradient(mlx_output)), atol=1e-5
     ), "Outputs of PyTorch MLP and MLX MLP should match"
 
     print("Test passed for both PyTorch and MLX MLP!")
 
+
+
+def test_pytorch_mlx_self_attention():
+    """
+    Test for feature parity between PyTorch and MLX implementations of SelfAttention.
+    We'll test both the basic self-attention and conditional attention scenarios.
+    """
+    # Define test parameters
+    channels = 64
+    batch_size = 2
+    spatial_size = 8
+    cond_dim = 32
+    num_heads = 8
+
+    # ===== 1. Test WITH CONDITIONAL INPUT =====
+    # Create models WITH conditional support
+    pytorch_attn_with_cond = SelfAttention(
+        channels=channels,
+        num_heads=num_heads,
+        cond_dim=cond_dim,  # Enable conditioning
+        use_attention_ffn=True,
+    )
+    mlx_attn_with_cond = SelfAttention_MLX(
+        channels=channels,
+        num_heads=num_heads,
+        cond_dim=cond_dim,
+        use_attention_ffn=True,
+    )
+
+    # Create conditional inputs
+    cond_seq_len = 4
+    pytorch_cond = torch.randn(batch_size, cond_seq_len, cond_dim)
+    pytorch_cond_mask = torch.ones(batch_size, cond_seq_len)
+    mlx_cond = mx.array(pytorch_cond.numpy())
+    mlx_cond_mask = mx.array(pytorch_cond_mask.numpy())
+
+    # Run conditional tests
+    pytorch_input = torch.randn(batch_size, channels, spatial_size, spatial_size)
+    mlx_input = mx.array(pytorch_input.numpy())
+
+    # PyTorch conditional forward
+    pytorch_output_with_cond = pytorch_attn_with_cond(
+        pytorch_input, cond=pytorch_cond, cond_mask=pytorch_cond_mask
+    )
+    # MLX conditional forward
+    mlx_output_with_cond = mlx_attn_with_cond.forward(
+        mlx_input, cond=mlx_cond, cond_mask=mlx_cond_mask
+    )
+
+    # ===== 2. Test WITHOUT CONDITIONAL INPUT =====
+    # Create NEW models WITHOUT conditional support
+    pytorch_attn_no_cond = SelfAttention(
+        channels=channels,
+        num_heads=num_heads,
+        cond_dim=None,  
+        use_attention_ffn=True,
+    )
+    mlx_attn_no_cond = SelfAttention_MLX(
+        channels=channels,
+        num_heads=num_heads,
+        cond_dim=None,  
+        use_attention_ffn=True,
+    )
+
+    # Run non-conditional tests
+    pytorch_output_no_cond = pytorch_attn_no_cond(pytorch_input)
+    mlx_output_no_cond = mlx_attn_no_cond.forward(mlx_input)
+
+    # ===== Assertions =====
+    # Check conditional outputs
+    assert pytorch_output_with_cond.shape == pytorch_input.shape
+    assert mlx_output_with_cond.shape == mlx_input.shape
+    assert np.allclose(
+        pytorch_output_with_cond.detach().numpy(),
+        np.array(mlx_output_with_cond),
+        atol=1e-5, rtol=1e-5
+    ), "Outputs of PyTorch and MLX attention should match"
+
+    # Check non-conditional outputs
+    assert pytorch_output_no_cond.shape == pytorch_input.shape
+    assert mlx_output_no_cond.shape == mlx_input.shape
+    assert np.allclose(
+        pytorch_output_no_cond.detach().numpy(),
+        np.array(mlx_output_no_cond),
+        atol=1e-5, rtol=1e-5
+    ), "Outputs without conditioning should match"
+
+    print("Self-attention test passed for both PyTorch and MLX!")
 
 def test_self_attention_1d():
     # Define parameters
