@@ -222,40 +222,6 @@ def get_files(
             for future in as_completed(download_futures):
                 logging.info(f"Downloaded {future.result()}")
 
-        if pretrained_text_embeddings:
-            num_downloaded_tar, num_queued_tar = 0, 0
-            futures = [
-                executor.submit(
-                    add_path_to_field, key, field="text_tar", parent_dir=parent_dir
-                )
-                for key in files
-            ]
-            download_futures = []
-            for future in as_completed(futures):
-                tar_files = future.result()
-                for tar_file in tar_files:
-                    download_futures.append(
-                        executor.submit(
-                            s3_helpers.download_object,
-                            *[
-                                "jiatao-datasets",
-                                "text2image/" + tar_file[9:],
-                                tar_file,
-                                endpoint_url,
-                                max_tar_download_bandwidth,
-                            ],
-                        )
-                    )
-                    num_queued_tar += 1
-                    if num_queued_tar - num_downloaded_tar >= num_concurrent_fetches:
-                        done, not_done = wait(
-                            download_futures, return_when=FIRST_COMPLETED
-                        )
-                        for future in done:
-                            logging.info(f"Downloaded {future.result()}")
-                            num_downloaded_tar += 1
-                            download_futures.remove(future)
-
         logging.info(f"Finished job {node_num}")
 
 
